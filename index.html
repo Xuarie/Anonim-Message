@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anonim Mesajlaşma</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Open Sans', sans-serif; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+
+body {
+    background: linear-gradient(0deg, #000428, #004e92, #000428, #004e92);
+    background-size: 400% 400%;
+    animation: slowGradient 40s ease infinite;
+    position: relative;
+    color: white;
+}
+
+@keyframes slowGradient {
+    0%{background-position:0% 0%}
+    25%{background-position:100% 0%}
+    50%{background-position:100% 100%}
+    75%{background-position:0% 100%}
+    100%{background-position:0% 0%}
+}
+
+.chat-container {
+    position: absolute;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    background-color: rgba(0,0,0,0.7);
+    overflow:hidden;
+}
+
+.profile-panel {
+    display:flex;
+    align-items:center;
+    padding:10px 20px;
+    gap:10px;
+    background-color: rgba(0,0,0,0.5);
+    justify-content: space-between;
+}
+
+.profile-left {
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.profile-left input[type="text"] {
+    padding:10px 15px;
+    border-radius:25px;
+    border:none;
+    outline:none;
+    font-size:14px;
+    color:white;
+    background-color: rgba(255,255,255,0.2);
+}
+
+.profile-left img, .profile-left i {
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    object-fit:cover;
+    cursor:pointer;
+    font-size:30px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:none;
+}
+
+.sohbet-btn {
+    padding:8px 15px;
+    background-color: rgba(255,255,255,0.2);
+    border:none;
+    border-radius:25px;
+    color:white;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:5px;
+}
+
+.messages {
+    flex:1;
+    padding:20px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.message {
+    max-width:70%;
+    padding:10px 15px;
+    border-radius:15px;
+    animation: fadeIn 0.5s ease;
+    word-wrap: break-word;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    position: relative;
+}
+
+.message.user { align-self:flex-end; background-color:#0084ff; color:white;}
+.message.peer { align-self:flex-start; background-color:#e5e5ea; color:black; }
+
+.message .name { font-weight:bold; }
+
+@keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
+
+.input-container {
+    display:flex;
+    padding:10px;
+    background-color: rgba(255,255,255,0.1);
+    align-items:center;
+    gap:5px;
+}
+
+.input-container input {
+    flex:1;
+    padding:10px 15px;
+    border-radius:25px;
+    border:none;
+    outline:none;
+    font-size:14px;
+    color:white;
+    background-color: rgba(255,255,255,0.2);
+}
+
+.input-container button {
+    background-color: rgba(255,255,255,0.2);
+    border:none;
+    border-radius:50%;
+    width:45px;
+    height:45px;
+    cursor:pointer;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    transition: all 0.3s ease;
+    color:white;
+    font-size:18px;
+}
+
+.input-container button:hover { background-color: rgba(255,255,255,0.4); transform:scale(1.1); }
+
+.link-container {
+    margin-top:5px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.link-container input {
+    flex:1;
+    padding:5px 10px;
+    border-radius:10px;
+    border:none;
+    outline:none;
+    font-size:14px;
+    color:black;
+}
+</style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="profile-panel">
+        <div class="profile-left">
+            <img id="avatarPreview" src="" alt="" style="display:none;">
+            <i id="userIcon" class="fas fa-user"></i>
+            <input type="text" id="usernameInput" placeholder="Kullanıcı adı" value="Anonim">
+            <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+        </div>
+        <button class="sohbet-btn" id="createRoomBtn"><i class="fas fa-link"></i> Sohbet Kur</button>
+    </div>
+
+    <div class="link-container" id="roomLinkContainer" style="display:none;">
+        <input type="text" id="roomLinkInput" readonly>
+        <button id="copyRoomLinkBtn">Kopyala</button>
+    </div>
+
+    <div class="messages" id="messages"></div>
+    <div class="input-container">
+        <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        <input type="text" id="messageInput" placeholder="Mesaj yaz...">
+        <button class="photo-btn" onclick="addImage()"><i class="fas fa-image"></i></button>
+        <button class="audio-btn" onclick="toggleRecording()"><i class="fas fa-microphone"></i></button>
+        <input type="file" id="imageInput" accept="image/*" style="display:none;">
+    </div>
+</div>
+
+<script>
+const messagesContainer = document.getElementById('messages');
+const messageInput = document.getElementById('messageInput');
+const imageInput = document.getElementById('imageInput');
+const avatarInput = document.getElementById('avatarInput');
+const avatarPreview = document.getElementById('avatarPreview');
+const usernameInput = document.getElementById('usernameInput');
+const userIcon = document.getElementById('userIcon');
+const createRoomBtn = document.getElementById('createRoomBtn');
+const roomLinkContainer = document.getElementById('roomLinkContainer');
+const roomLinkInput = document.getElementById('roomLinkInput');
+const copyRoomLinkBtn = document.getElementById('copyRoomLinkBtn');
+
+let userProfile = { name: usernameInput.value, avatar: '' };
+let peerConnection;
+let dataChannel;
+
+// Avatar seçimi
+function selectAvatar() { avatarInput.click(); }
+avatarPreview.addEventListener('click', selectAvatar);
+userIcon.addEventListener('click', selectAvatar);
+
+avatarInput.addEventListener('change', function(){
+    const file = this.files[0];
+    if(file){
+        const reader = new FileReader();
+        reader.onload = function(e){
+            userProfile.avatar = e.target.result;
+            avatarPreview.src = e.target.result;
+            userIcon.style.display = 'none';
+            avatarPreview.style.display = 'flex';
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+// Mesaj gönderme
+function sendMessage() {
+    const text = messageInput.value.trim();
+    if(!text) return;
+    userProfile.name = usernameInput.value || 'Anonim';
+    addMessage({text:text, profile:userProfile}, 'user');
+    if(dataChannel && dataChannel.readyState==='open'){
+        dataChannel.send(JSON.stringify({text:text, profile:userProfile}));
+    }
+    messageInput.value = '';
+}
+
+// Enter ile gönderme
+messageInput.addEventListener('keypress', function(e){
+    if(e.key === 'Enter') sendMessage();
+});
+
+// Mesaj ekleme
+function addMessage(content, sender){
+    const msg = document.createElement('div');
+    msg.classList.add('message', sender);
+    const nameEl = document.createElement('span');
+    nameEl.className='name';
+    nameEl.textContent = sender==='user' ? content.profile.name : content.profile?.name || 'Anonim';
+    msg.appendChild(nameEl);
+
+    const textEl = document.createElement('span');
+    textEl.textContent = content.text;
+    msg.appendChild(textEl);
+
+    if(content.img) msg.appendChild(content.img);
+
+    // Sağ tık menüsü
+    msg.addEventListener('contextmenu', function(e){
+        e.preventDefault();
+        const action = prompt("İşlem: sil veya yanıtla", "sil/yanıtla");
+        if(action==='sil') msg.remove();
+        else if(action==='yanıtla') messageInput.value = "@"+content.profile.name+": ";
+    });
+
+    messagesContainer.appendChild(msg);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Resim ekleme
+function addImage(){ imageInput.click(); }
+imageInput.addEventListener('change', function(){
+    const file = this.files[0];
+    if(file){
+        const reader = new FileReader();
+        reader.onload = function(e){
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.maxWidth='100%';
+            img.style.borderRadius='10px';
+            addMessage({text:'', profile:userProfile, img:img}, 'user');
+            if(dataChannel && dataChannel.readyState==='open'){
+                dataChannel.send(JSON.stringify({text:'', profile:userProfile, img:e.target.result}));
+            }
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+// Ses kaydı
+let mediaRecorder;
+let audioChunks = [];
+let recording = false;
+async function toggleRecording(){
+    if(recording){
+        mediaRecorder.stop();
+        recording=false;
+    } else {
+        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.start();
+        recording=true;
+        audioChunks=[];
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(audioChunks,{type:'audio/webm'});
+            const audioURL = URL.createObjectURL(blob);
+            const audio = document.createElement('audio');
+            audio.controls=true;
+            audio.src=audioURL;
+            addMessage({text:'', profile:userProfile, img:audio}, 'user');
+            if(dataChannel && dataChannel.readyState==='open'){
+                // sesi base64 olarak göndermek isteyebilirsin, burada basit bırakıyoruz
+            }
+        }
+    }
+}
+
+// Oda oluştur ve link göster
+function createRoom(){
+    const roomId = Math.random().toString(36).substring(2,10);
+    const roomLink = `${location.origin}${location.pathname}?room=${roomId}`;
+    roomLinkInput.value = roomLink;
+    roomLinkContainer.style.display='flex';
+    setupConnection(roomId,true);
+}
+
+createRoomBtn.addEventListener('click', createRoom);
+
+// Kopyala butonu
+copyRoomLinkBtn.addEventListener('click', ()=>{
+    roomLinkInput.select();
+    document.execCommand('copy');
+    alert('Link kopyalandı!');
+});
+
+// WebRTC bağlantısı (basit P2P)
+function setupConnection(roomId,isOfferer){
+    peerConnection = new RTCPeerConnection();
+    dataChannel = peerConnection.createDataChannel('chat');
+
+    dataChannel.onmessage = (event)=>{
+        const data = JSON.parse(event.data);
+        if(data.img){
+            if(typeof data.img === 'string'){
+                const img = document.createElement('img');
+                img.src = data.img;
+                img.style.maxWidth='100%';
+                img.style.borderRadius='10px';
+                addMessage({text:'', profile:data.profile, img:img}, 'peer');
+            }
+        } else addMessage(data,'peer');
+    }
+
+    peerConnection.ondatachannel = event=>{
+        dataChannel = event.channel;
+        dataChannel.onmessage = (e)=>{
+            const data = JSON.parse(e.data);
+            if(data.img){
+                if(typeof data.img === 'string'){
+                    const img = document.createElement('img');
+                    img.src = data.img;
+                    img.style.maxWidth='100%';
+                    img.style.borderRadius='10px';
+                    addMessage({text:'', profile:data.profile, img:img}, 'peer');
+                }
+            } else addMessage(data,'peer');
+        }
+    }
+
+    // Signaling server gereklidir, burada örnek gösterim
+    console.log(`WebRTC hazır. Oda ID: ${roomId} (bu örnek, signaling server olmadan gerçek bağlantı kurulmaz)`);
+}
+
+// URL’den room parametresini oku (arkadaş katıldığında)
+function checkRoomParam(){
+    const params = new URLSearchParams(window.location.search);
+    const roomId = params.get('room');
+    if(roomId){
+        roomLinkInput.value = location.href;
+        roomLinkContainer.style.display='flex';
+        setupConnection(roomId,false);
+    }
+}
+checkRoomParam();
+</script>
+</body>
+</html>
