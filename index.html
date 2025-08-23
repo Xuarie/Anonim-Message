@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
 <style>
+/* Stil ve arayüz kodu aynı, önceki sürümle tamamen uyumlu */
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Open Sans', sans-serif; }
 html, body { width: 100%; height: 100%; overflow: hidden; }
 
@@ -26,87 +27,21 @@ body {
     100%{background-position:0% 0%}
 }
 
-.chat-container {
-    position: absolute;
-    top:0; left:0;
-    width:100%;
-    height:100%;
-    display:flex;
-    flex-direction:column;
-    background-color: rgba(0,0,0,0.7);
-    overflow:hidden;
-}
+.chat-container { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; background-color: rgba(0,0,0,0.7); overflow:hidden; }
 
-.profile-panel {
-    display:flex;
-    align-items:center;
-    padding:10px 20px;
-    gap:10px;
-    background-color: rgba(0,0,0,0.5);
-    justify-content: space-between;
-}
+.profile-panel { display:flex; align-items:center; padding:10px 20px; gap:10px; background-color: rgba(0,0,0,0.5); justify-content: space-between; }
 
-.profile-left {
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
+.profile-left { display:flex; align-items:center; gap:10px; }
 
-.profile-left input[type="text"] {
-    padding:10px 15px;
-    border-radius:25px;
-    border:none;
-    outline:none;
-    font-size:14px;
-    color:white;
-    background-color: rgba(255,255,255,0.2);
-}
+.profile-left input[type="text"] { padding:10px 15px; border-radius:25px; border:none; outline:none; font-size:14px; color:white; background-color: rgba(255,255,255,0.2); }
 
-.profile-left img, .profile-left i {
-    width:50px;
-    height:50px;
-    border-radius:50%;
-    object-fit:cover;
-    cursor:pointer;
-    font-size:30px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:none;
-}
+.profile-left img, .profile-left i { width:50px; height:50px; border-radius:50%; object-fit:cover; cursor:pointer; font-size:30px; display:flex; justify-content:center; align-items:center; background:none; }
 
-.sohbet-btn {
-    padding:8px 15px;
-    background-color: rgba(255,255,255,0.2);
-    border:none;
-    border-radius:25px;
-    color:white;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    gap:5px;
-}
+.sohbet-btn { padding:8px 15px; background-color: rgba(255,255,255,0.2); border:none; border-radius:25px; color:white; cursor:pointer; display:flex; align-items:center; gap:5px; }
 
-.messages {
-    flex:1;
-    padding:20px;
-    overflow-y:auto;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-}
+.messages { flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
 
-.message {
-    max-width:70%;
-    padding:10px 15px;
-    border-radius:15px;
-    animation: fadeIn 0.5s ease;
-    word-wrap: break-word;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    position: relative;
-}
+.message { max-width:70%; padding:10px 15px; border-radius:15px; animation: fadeIn 0.5s ease; word-wrap: break-word; display:flex; align-items:center; gap:10px; position: relative; }
 
 .message.user { align-self:flex-end; background-color:#0084ff; color:white;}
 .message.peer { align-self:flex-start; background-color:#e5e5ea; color:black; }
@@ -115,58 +50,17 @@ body {
 
 @keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
 
-.input-container {
-    display:flex;
-    padding:10px;
-    background-color: rgba(255,255,255,0.1);
-    align-items:center;
-    gap:5px;
-}
+.input-container { display:flex; padding:10px; background-color: rgba(255,255,255,0.1); align-items:center; gap:5px; }
 
-.input-container input {
-    flex:1;
-    padding:10px 15px;
-    border-radius:25px;
-    border:none;
-    outline:none;
-    font-size:14px;
-    color:white;
-    background-color: rgba(255,255,255,0.2);
-}
+.input-container input { flex:1; padding:10px 15px; border-radius:25px; border:none; outline:none; font-size:14px; color:white; background-color: rgba(255,255,255,0.2); }
 
-.input-container button {
-    background-color: rgba(255,255,255,0.2);
-    border:none;
-    border-radius:50%;
-    width:45px;
-    height:45px;
-    cursor:pointer;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    transition: all 0.3s ease;
-    color:white;
-    font-size:18px;
-}
+.input-container button { background-color: rgba(255,255,255,0.2); border:none; border-radius:50%; width:45px; height:45px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition: all 0.3s ease; color:white; font-size:18px; }
 
 .input-container button:hover { background-color: rgba(255,255,255,0.4); transform:scale(1.1); }
 
-.link-container {
-    margin-top:5px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
+.link-container { margin-top:5px; display:flex; align-items:center; gap:10px; }
 
-.link-container input {
-    flex:1;
-    padding:5px 10px;
-    border-radius:10px;
-    border:none;
-    outline:none;
-    font-size:14px;
-    color:black;
-}
+.link-container input { flex:1; padding:5px 10px; border-radius:10px; border:none; outline:none; font-size:14px; color:black; }
 </style>
 </head>
 <body>
@@ -198,6 +92,7 @@ body {
 </div>
 
 <script>
+/* ------------------ Temel değişkenler ------------------ */
 const messagesContainer = document.getElementById('messages');
 const messageInput = document.getElementById('messageInput');
 const imageInput = document.getElementById('imageInput');
@@ -214,7 +109,7 @@ let userProfile = { name: usernameInput.value, avatar: '' };
 let peerConnection;
 let dataChannel;
 
-// Avatar seçimi
+/* ------------------ Avatar seçimi ------------------ */
 function selectAvatar() { avatarInput.click(); }
 avatarPreview.addEventListener('click', selectAvatar);
 userIcon.addEventListener('click', selectAvatar);
@@ -233,7 +128,7 @@ avatarInput.addEventListener('change', function(){
     }
 });
 
-// Mesaj gönderme
+/* ------------------ Mesaj gönderme ------------------ */
 function sendMessage() {
     const text = messageInput.value.trim();
     if(!text) return;
@@ -245,12 +140,10 @@ function sendMessage() {
     messageInput.value = '';
 }
 
-// Enter ile gönderme
 messageInput.addEventListener('keypress', function(e){
     if(e.key === 'Enter') sendMessage();
 });
 
-// Mesaj ekleme
 function addMessage(content, sender){
     const msg = document.createElement('div');
     msg.classList.add('message', sender);
@@ -259,13 +152,14 @@ function addMessage(content, sender){
     nameEl.textContent = sender==='user' ? content.profile.name : content.profile?.name || 'Anonim';
     msg.appendChild(nameEl);
 
-    const textEl = document.createElement('span');
-    textEl.textContent = content.text;
-    msg.appendChild(textEl);
+    if(content.text) {
+        const textEl = document.createElement('span');
+        textEl.textContent = content.text;
+        msg.appendChild(textEl);
+    }
 
     if(content.img) msg.appendChild(content.img);
 
-    // Sağ tık menüsü
     msg.addEventListener('contextmenu', function(e){
         e.preventDefault();
         const action = prompt("İşlem: sil veya yanıtla", "sil/yanıtla");
@@ -277,7 +171,7 @@ function addMessage(content, sender){
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Resim ekleme
+/* ------------------ Resim ve ses ------------------ */
 function addImage(){ imageInput.click(); }
 imageInput.addEventListener('change', function(){
     const file = this.files[0];
@@ -297,7 +191,6 @@ imageInput.addEventListener('change', function(){
     }
 });
 
-// Ses kaydı
 let mediaRecorder;
 let audioChunks = [];
 let recording = false;
@@ -320,39 +213,80 @@ async function toggleRecording(){
             audio.src=audioURL;
             addMessage({text:'', profile:userProfile, img:audio}, 'user');
             if(dataChannel && dataChannel.readyState==='open'){
-                // sesi base64 olarak göndermek isteyebilirsin, burada basit bırakıyoruz
+                // istersen base64 olarak gönderebilirsin
             }
         }
     }
 }
 
-// Oda oluştur ve link göster
-function createRoom(){
+/* ------------------ Oda oluştur ve bağlantı ------------------ */
+createRoomBtn.addEventListener('click', ()=>{
     const roomId = Math.random().toString(36).substring(2,10);
     const roomLink = `${location.origin}${location.pathname}?room=${roomId}`;
     roomLinkInput.value = roomLink;
     roomLinkContainer.style.display='flex';
     setupConnection(roomId,true);
-}
+});
 
-createRoomBtn.addEventListener('click', createRoom);
-
-// Kopyala butonu
 copyRoomLinkBtn.addEventListener('click', ()=>{
     roomLinkInput.select();
     document.execCommand('copy');
     alert('Link kopyalandı!');
 });
 
-// WebRTC bağlantısı (basit P2P)
-function setupConnection(roomId,isOfferer){
+/* ------------------ WebRTC + minimal signaling ------------------ */
+function setupConnection(roomId, isOfferer){
     peerConnection = new RTCPeerConnection();
-    dataChannel = peerConnection.createDataChannel('chat');
+    if(isOfferer){
+        dataChannel = peerConnection.createDataChannel('chat');
+        setupDataChannel();
+    } else {
+        peerConnection.ondatachannel = event=>{
+            dataChannel = event.channel;
+            setupDataChannel();
+        }
+    }
 
+    peerConnection.onicecandidate = event=>{
+        if(event.candidate){
+            // signaling server üzerinden diğer tarafa candidate gönderilecek
+            socket.emit('ice', {room: roomId, candidate: event.candidate});
+        }
+    }
+
+    // minimal signaling server
+    const socket = io('https://your-signaling-server.com'); // kendi signaling server adresi
+    socket.emit('join', roomId);
+
+    socket.on('offer', async sdp=>{
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(sdp));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        socket.emit('answer', {room: roomId, sdp: answer});
+    });
+
+    socket.on('answer', async sdp=>{
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(sdp));
+    });
+
+    socket.on('ice', async candidate=>{
+        try{ await peerConnection.addIceCandidate(candidate); }catch(e){}
+    });
+
+    if(isOfferer){
+        peerConnection.createOffer().then(async offer=>{
+            await peerConnection.setLocalDescription(offer);
+            socket.emit('offer',{room:roomId, sdp:offer});
+        });
+    }
+}
+
+function setupDataChannel(){
+    dataChannel.onopen = ()=> console.log("Bağlantı açık!");
     dataChannel.onmessage = (event)=>{
         const data = JSON.parse(event.data);
         if(data.img){
-            if(typeof data.img === 'string'){
+            if(typeof data.img==='string'){
                 const img = document.createElement('img');
                 img.src = data.img;
                 img.style.maxWidth='100%';
@@ -361,28 +295,9 @@ function setupConnection(roomId,isOfferer){
             }
         } else addMessage(data,'peer');
     }
-
-    peerConnection.ondatachannel = event=>{
-        dataChannel = event.channel;
-        dataChannel.onmessage = (e)=>{
-            const data = JSON.parse(e.data);
-            if(data.img){
-                if(typeof data.img === 'string'){
-                    const img = document.createElement('img');
-                    img.src = data.img;
-                    img.style.maxWidth='100%';
-                    img.style.borderRadius='10px';
-                    addMessage({text:'', profile:data.profile, img:img}, 'peer');
-                }
-            } else addMessage(data,'peer');
-        }
-    }
-
-    // Signaling server gereklidir, burada örnek gösterim
-    console.log(`WebRTC hazır. Oda ID: ${roomId} (bu örnek, signaling server olmadan gerçek bağlantı kurulmaz)`);
 }
 
-// URL’den room parametresini oku (arkadaş katıldığında)
+/* ------------------ URL’den room kontrol ------------------ */
 function checkRoomParam(){
     const params = new URLSearchParams(window.location.search);
     const roomId = params.get('room');
@@ -394,5 +309,8 @@ function checkRoomParam(){
 }
 checkRoomParam();
 </script>
+
+<!-- Signaling server için socket.io -->
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </body>
 </html>
