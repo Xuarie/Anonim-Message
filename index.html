@@ -199,61 +199,6 @@ html,body{
     font-size: 14px;
     opacity: 0.7;
 }
-#configPanel {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 300px;
-    background-color: rgba(0, 0, 0, 0.95);
-    border-radius: 10px;
-    padding: 20px;
-    display: none;
-    flex-direction: column;
-    gap: 15px;
-    z-index: 10001;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    text-align: center;
-}
-#configPanel h2 {
-    font-size: 1.2rem;
-    margin-bottom: 5px;
-}
-#configPanel p {
-    font-size: 12px;
-    opacity: 0.8;
-}
-#configPanel textarea {
-    width: 100%;
-    height: 150px;
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 5px;
-    padding: 10px;
-    resize: none;
-    font-size: 12px;
-}
-#configPanel button {
-    padding: 10px;
-    background-color: rgba(255, 255, 255, 0.2);
-    border: none;
-    border-radius: 5px;
-    color: white;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease;
-}
-#configPanel button:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-}
-#configStatus {
-    color: red;
-    font-size: 12px;
-    margin-top: -10px;
-    display: none;
-}
 </style>
 </head>
 <body>
@@ -302,26 +247,13 @@ html,body{
     <span id="peerName">Arkadaşın Bekleniyor...</span>
 </div>
 
-<!-- Yapılandırma Hatası Paneli -->
-<div id="configPanel">
-    <h2>Yapılandırma Hatası</h2>
-    <p>Firebase bağlantı ayarları bulunamadı. Lütfen Firebase projenizin yapılandırma nesnesini aşağıya yapıştırın.</p>
-    <textarea id="configInput" placeholder="Firebase config nesnesini buraya yapıştır..."></textarea>
-    <span id="configStatus"></span>
-    <button id="saveConfigBtn">Uygulamayı Başlat</button>
-</div>
-
 <!-- 
     ============================================================================
-    UYGULAMANIN ÇALIŞMASI İÇİN GEREKLİ OLAN TEK BÖLÜM BURASI
+    TÜM FIREBASE KODLARI BURADAN KALDIRILDI.
+    BURAYA KENDİ SİNYALİZASYON MANTIĞINIZI EKLEYEBİLİRSİNİZ.
     ============================================================================
 -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, onSnapshot, collection, query, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-// Uygulama başlatıldığında tüm kodun çalışmasını sağlar
+<script>
 window.onload = function() {
 
     // --- GENEL DEĞİŞKENLER VE DOM ELEMANLARI ---
@@ -333,14 +265,9 @@ window.onload = function() {
     const imageInput = document.getElementById('imageInput');
     const splashScreen = document.querySelector('.splash-screen');
     const chatContainer = document.querySelector('.chat-container');
-    const peerProfile = document.getElementById('peerProfile');
     const smessagerLogo = document.getElementById('smessager-logo');
     const createRoomBtn = document.getElementById('createRoomBtn');
     const statusMessage = document.getElementById('statusMessage');
-    const configPanel = document.getElementById('configPanel');
-    const configInput = document.getElementById('configInput');
-    const saveConfigBtn = document.getElementById('saveConfigBtn');
-    const configStatus = document.getElementById('configStatus');
     const profileBtn = document.getElementById('profileBtn');
     const profilePanel = document.getElementById('profilePanel');
     const profileImgInput = document.getElementById('profileImgInput');
@@ -348,164 +275,26 @@ window.onload = function() {
     const profileNameInput = document.getElementById('profileNameInput');
     const saveProfileBtn = document.getElementById('saveProfileBtn');
 
-    // Canvas ortamı tarafından sağlanan global değişkenleri kullan
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    let firebaseConfig = {};
-
     // Durum yönetimi için değişkenler
     let userProfile = { name: 'Anonim', avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
     let roomId = null;
-    let userId = null;
-    let db, auth, authReady = false;
-    let messageUnsub, profileUnsub;
     
     // --- FONKSİYON TANIMLARI ---
 
-    // Firebase'i başlatır ve kullanıcıyı anonim olarak oturum açtırır
-    const startFirebase = async (config) => {
-        try {
-            const app = initializeApp(config);
-            db = getFirestore(app);
-            auth = getAuth(app);
-
-            // Kimlik doğrulama durumundaki değişiklikleri dinler
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    authReady = true;
-                    console.log('User signed in with UID:', userId);
-                    // Kullanıcı ID'si hazır olunca URL'den oda ID'sini kontrol et
-                    checkUrlForRoomId();
-                } else {
-                    console.log('No user signed in. Attempting anonymous sign-in.');
-                    try {
-                        // Canvas tarafından sağlanan özel token'ı veya anonim oturumu kullan
-                        if (typeof __initial_auth_token !== 'undefined') {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch(e) {
-                        console.error("Firebase authentication error:", e);
-                        statusMessage.textContent = 'Bağlantı Hatası: Lütfen tekrar deneyin.';
-                    }
-                }
-            });
-        } catch (error) {
-            console.error("Firebase başlatılırken hata oluştu:", error);
-            statusMessage.textContent = 'Firebase başlatılamadı. Yapılandırmanızı kontrol edin.';
-            configPanel.style.display = 'flex';
-            configStatus.textContent = 'Geçersiz Firebase yapılandırma nesnesi.';
-            configStatus.style.display = 'block';
-        }
-    };
-
-    // URL'deki oda kimliğini kontrol eder ve sohbet odasına katılır
-    function checkUrlForRoomId() {
-        if (!authReady) {
-            console.warn("Auth is not ready yet. Retrying in 1s.");
-            setTimeout(checkUrlForRoomId, 1000);
-            return;
-        }
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const roomFromUrl = urlParams.get('room');
-        if (roomFromUrl) {
-            console.log(`URL'de oda ID'si bulundu: ${roomFromUrl}`);
-            roomId = roomFromUrl;
-            joinRoom(roomId);
-            createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Odaya Katıldın`;
-            createRoomBtn.classList.remove('blinking');
-        } else {
-            console.log("URL'de oda ID'si bulunamadı, yeni bir sohbet başlatılıyor.");
-            createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
-            createRoomBtn.classList.add('blinking');
-        }
-    }
-    
-    // Sohbet odası oluşturma ve katılma
-    async function joinRoom(id) {
-        if (!db || !userId) {
-            console.error("Firestore veya kullanıcı ID'si hazır değil.");
-            return;
-        }
+    // Sohbet odası oluşturma
+    function joinRoom(id) {
         statusMessage.textContent = `Oda: ${id} - Bağlanıyor...`;
-        
-        // Önceki dinleyicileri kapat
-        if (messageUnsub) messageUnsub();
-        if (profileUnsub) profileUnsub();
-        
-        // Mesajları temizle
         messagesContainer.innerHTML = '';
         console.log("Odaya Katılıyor:", id);
 
-        // Kendi profil bilgilerini Firestore'a kaydet
-        const userProfileRef = doc(db, "artifacts", appId, "public", "data", "rooms", id, "users", userId);
-        try {
-            await setDoc(userProfileRef, {
-                name: userProfile.name,
-                avatar: userProfile.avatar,
-                timestamp: serverTimestamp()
-            }, { merge: true });
-        } catch (e) {
-            console.error("Profil bilgisi kaydedilirken hata:", e);
-            statusMessage.textContent = 'Profil kaydı hatası!';
-        }
-
-        // Gerçek zamanlı mesaj dinleyicisi
-        const messagesRef = collection(db, "artifacts", appId, "public", "data", "rooms", id, "messages");
-        messageUnsub = onSnapshot(messagesRef, (snapshot) => {
-            snapshot.docChanges().forEach(change => {
-                if (change.type === "added") {
-                    const messageData = change.doc.data();
-                    const sender = messageData.senderId === userId ? 'user' : 'peer';
-                    const content = { text: messageData.text, timestamp: messageData.timestamp };
-                    addMessage(content, sender, messageData.profile);
-                }
-            });
-            // Mesajları timestamp'e göre sırala
-            sortMessagesByTimestamp();
-            statusMessage.textContent = `Sohbet Odası: ${id}`;
-        }, (error) => {
-            console.error("Mesajlar dinlenirken hata:", error);
-            statusMessage.textContent = 'Bağlantı Hatası!';
-            resetChat();
-        });
-
-        // Diğer kullanıcıların profil bilgilerini dinle
-        const usersRef = collection(db, "artifacts", appId, "public", "data", "rooms", id, "users");
-        profileUnsub = onSnapshot(usersRef, (snapshot) => {
-            snapshot.docChanges().forEach(change => {
-                const userData = change.doc.data();
-                if (change.doc.id !== userId) {
-                    // Akran profilini güncelle
-                    document.getElementById('peerName').textContent = userData.name;
-                    document.getElementById('peerAvatar').src = userData.avatar;
-                }
-            });
-        }, (error) => {
-            console.error("Kullanıcı profilleri dinlenirken hata:", error);
-        });
+        // BURAYA SİNYALİZASYON KODLARI GELMELİ
+        // Örnek:
+        // socket.connect(id);
+        // socket.on('message', (data) => addMessage(data, 'peer', { name: data.name, avatar: data.avatar }));
     }
-
-    // Mesajları zamana göre sıralar
-    function sortMessagesByTimestamp() {
-        const messages = Array.from(messagesContainer.querySelectorAll('.message'));
-        const sortedMessages = messages.sort((a, b) => {
-            const timestampA = JSON.parse(a.dataset.timestamp);
-            const timestampB = JSON.parse(b.dataset.timestamp);
-            return timestampA.seconds - timestampB.seconds;
-        });
-        messagesContainer.innerHTML = '';
-        sortedMessages.forEach(msg => messagesContainer.appendChild(msg));
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
 
     // Sohbeti ve durumu sıfırlar
     function resetChat() {
-        if (messageUnsub) messageUnsub();
-        if (profileUnsub) profileUnsub();
         roomId = null;
         messagesContainer.innerHTML = '';
         createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
@@ -555,10 +344,7 @@ window.onload = function() {
     function addMessage(content, sender, profile) {
         const msg = document.createElement('div');
         msg.classList.add('message', sender);
-        if (content.timestamp) {
-            msg.dataset.timestamp = JSON.stringify(content.timestamp);
-        }
-    
+        
         const profilePic = document.createElement('img');
         profilePic.className = 'profile-pic';
         profilePic.src = profile.avatar;
@@ -611,39 +397,29 @@ window.onload = function() {
     
     startSplashAnimation();
 
-    // Firebase yapılandırmasını kontrol et
-    try {
-        if (typeof __firebase_config !== 'undefined') {
-            firebaseConfig = JSON.parse(__firebase_config);
-            startFirebase(firebaseConfig);
-        } else {
-            console.error("Firebase config is not valid or not found.");
-            statusMessage.textContent = 'Yapılandırma Hatası: Ayarlarınızı girin.';
-            configPanel.style.display = 'flex';
-        }
-    } catch (e) {
-        console.error("Firebase config is not valid or not found.", e);
-        statusMessage.textContent = 'Yapılandırma Hatası: Ayarlarınızı girin.';
-        configPanel.style.display = 'flex';
+    // URL'deki oda kimliğini kontrol et
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomFromUrl = urlParams.get('room');
+    if (roomFromUrl) {
+        console.log(`URL'de oda ID'si bulundu: ${roomFromUrl}`);
+        roomId = roomFromUrl;
+        joinRoom(roomId);
+        createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Odaya Katıldın`;
+        createRoomBtn.classList.remove('blinking');
+    } else {
+        console.log("URL'de oda ID'si bulunamadı, yeni bir sohbet başlatılıyor.");
+        createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
+        createRoomBtn.classList.add('blinking');
     }
 
     // Oda Kur butonu
-    createRoomBtn.addEventListener('click', async () => {
-        if (!authReady) {
-            console.warn("Auth is not ready yet. Please wait.");
-            statusMessage.textContent = 'Bağlanılıyor...';
-            return;
-        }
-        
-        // Mevcut sohbeti sıfırla
+    createRoomBtn.addEventListener('click', () => {
         resetChat();
-
         const newRoomId = generateRoomId();
         const url = `${window.location.origin}${window.location.pathname}?room=${newRoomId}`;
         window.history.pushState({}, '', url);
         roomId = newRoomId;
-        await joinRoom(roomId);
-
+        joinRoom(roomId);
         createRoomBtn.innerHTML = `<i class="fas fa-copy"></i> Kopyalandı!`;
         createRoomBtn.classList.remove('blinking');
         statusMessage.textContent = 'Sohbet bağlantısı kopyalandı!';
@@ -656,23 +432,18 @@ window.onload = function() {
     });
 
     // Mesaj gönderme butonu
-    sendBtn.addEventListener('click', async () => {
+    sendBtn.addEventListener('click', () => {
         const text = messageInput.value.trim();
-        if (!text || !roomId || !db || !userId) return;
+        if (!text || !roomId) return;
         
-        const messagesRef = collection(db, "artifacts", appId, "public", "data", "rooms", roomId, "messages");
-        try {
-            await addDoc(messagesRef, {
-                text: text,
-                senderId: userId,
-                profile: userProfile,
-                timestamp: serverTimestamp()
-            });
-            messageInput.value = '';
-            messageInput.style.height = '45px';
-        } catch (e) {
-            console.error("Mesaj gönderilirken hata:", e);
-        }
+        // Bu noktada mesaj göndermek için sinyalizasyon kodunuzu kullanın.
+        // Örnek:
+        // socket.emit('message', { text: text, profile: userProfile });
+        
+        // Sadece arayüzde göstermek için:
+        addMessage({ text: text }, 'user', userProfile);
+        messageInput.value = '';
+        messageInput.style.height = '45px';
     });
 
     // Profil panelini göster/gizle
@@ -690,23 +461,15 @@ window.onload = function() {
             reader.onload = e => { 
                 profileImg.src = e.target.result; 
                 userProfile.avatar = e.target.result; 
-                if (roomId && db && userId) {
-                    const userProfileRef = doc(db, "artifacts", appId, "public", "data", "rooms", roomId, "users", userId);
-                    setDoc(userProfileRef, { avatar: userProfile.avatar }, { merge: true });
-                }
             }
             reader.readAsDataURL(file);
         }
     });
 
     // Profil bilgilerini kaydet
-    saveProfileBtn.addEventListener('click', async () => { 
+    saveProfileBtn.addEventListener('click', () => { 
         userProfile.name = profileNameInput.value || 'Anonim'; 
         profilePanel.style.display = 'none'; 
-        if (roomId && db && userId) {
-            const userProfileRef = doc(db, "artifacts", appId, "public", "data", "rooms", roomId, "users", userId);
-            await setDoc(userProfileRef, { name: userProfile.name }, { merge: true });
-        }
     });
 
     // ENTER ile mesaj gönderme, SHIFT+ENTER ile alt satıra geçme
@@ -799,20 +562,6 @@ window.onload = function() {
 
             profilePanel.style.left = newLeft + 'px';
             profilePanel.style.top = newTop + 'px';
-        }
-    });
-
-    // Yapılandırma panelini kaydetme
-    saveConfigBtn.addEventListener('click', () => {
-        try {
-            const userConfig = JSON.parse(configInput.value);
-            configStatus.style.display = 'none';
-            configPanel.style.display = 'none';
-            startFirebase(userConfig);
-        } catch (e) {
-            configStatus.textContent = 'Geçerli bir JSON nesnesi giriniz!';
-            configStatus.style.display = 'block';
-            console.error("Geçersiz Firebase yapılandırması:", e);
         }
     });
 };
