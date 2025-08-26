@@ -1,678 +1,720 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SMessage</title>
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous"/>
-<style>
-/* GENEL STİLLER VE RENKLER */
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Open Sans',sans-serif;}
-html,body{
-    width:100%;height:100%;overflow:hidden;
-    background: linear-gradient(0deg, #000000, #ffffff, #000000, #ffffff);
-    background-size:400% 400%;
-    animation:slowGradient 40s ease infinite;
-    color:white;
-}
-@keyframes slowGradient{
-    0%{background-position:0% 0%}
-    25%{background-position:100% 0%}
-    50%{background-position:100% 100%}
-    75%{background-position:0% 100%}
-    100%{background-position:0% 0%;}
-}
-@keyframes blinkWhite{
-    0%,100%{opacity:1;color:white;}
-    50%{opacity:0.2;color:#ffffff66;}
-}
-/* PROFİL PANELİ İÇİN "BOUNCE" EFEKTİ */
-@keyframes bounce{
-    0%,100%{transform:translateY(0);}
-    25%{transform:translateY(-15px);}
-    50%{transform:translateY(0px);}
-    75%{transform:translateY(-5px);}
-}
-/* SOHBET BUTONU İÇİN BLINK EFEKTİ */
-.sohbet-btn.blinking {
-    animation: blinkWhite 1.5s infinite;
-}
-/* Pasif (disabled) buton stili */
-.sohbet-btn[disabled],
-.sohbet-btn[disabled]:hover {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMessage - Peer-to-Peer Sohbet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous"/>
+    <style>
+        /* GENEL STİLLER VE RENKLER */
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Open Sans',sans-serif;}
+        html,body{
+            width:100%;height:100%;overflow:hidden;
+            background: linear-gradient(0deg, #000000, #ffffff, #000000, #ffffff);
+            background-size:400% 400%;
+            animation:slowGradient 40s ease infinite;
+            color:white;
+        }
+        @keyframes slowGradient{
+            0%{background-position:0% 0%}
+            25%{background-position:100% 0%}
+            50%{background-position:100% 100%}
+            75%{background-position:0% 100%}
+            100%{background-position:0% 0%;}
+        }
+        @keyframes blinkWhite{
+            0%,100%{opacity:1;color:white;}
+            50%{opacity:0.2;color:#ffffff66;}
+        }
+        @keyframes bounce{
+            0%,100%{transform:translateY(0);}
+            25%{transform:translateY(-15px);}
+            50%{transform:translateY(0px);}
+            75%{transform:translateY(-5px);}
+        }
 
-/* YENİ EFEKT: AÇILIŞ EKRANI VE ANİMASYONU */
-.splash-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.95);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    z-index: 9999;
-    opacity: 1;
-    transition: opacity 1s ease-in-out;
-}
-#smessager-logo {
-    display: flex;
-    font-family: 'Open Sans', sans-serif;
-    font-weight: 300;
-    font-size: 3rem;
-    color: white;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
-                 0 0 20px rgba(255, 255, 255, 0.5);
-    position: relative;
-}
-#smessager-logo span {
-    display: inline-block;
-    opacity: 1;
-    transition: all 1s ease-in-out;
-}
-.dot-animation {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    background-color: white;
-    border-radius: 50%;
-    opacity: 0;
-    transform: scale(0);
-    transition: all 0.5s ease-in-out;
-}
-.dot-animation.show {
-    opacity: 1;
-    transform: scale(1);
-    animation: dot-pulse 1.5s infinite;
-}
-@keyframes dot-pulse {
-    0%, 100% { transform: scale(0.8); box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.5); }
-    50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 40px rgba(255, 255, 255, 0.8); }
-}
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+        #smessager-logo {
+            display: flex;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 300;
+            font-size: 3rem;
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.5);
+            position: relative;
+        }
+        #smessager-logo span {
+            display: inline-block;
+            opacity: 1;
+            transition: all 1s ease-in-out;
+        }
+        .dot-animation {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.5s ease-in-out;
+        }
+        .dot-animation.show {
+            opacity: 1;
+            transform: scale(1);
+            animation: dot-pulse 1.5s infinite;
+        }
+        @keyframes dot-pulse {
+            0%, 100% { transform: scale(0.8); box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.5); }
+            50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 40px rgba(255, 255, 255, 0.8); }
+        }
 
-.chat-container{
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    display:flex;
-    flex-direction:column;
-    background-color:rgba(0,0,0,0.85);
-    opacity: 0;
-    transition: opacity 1s ease-in-out;
-}
-.profile-panel{
-    display:flex;
-    align-items:center;
-    padding:15px 20px;
-    gap:10px;
-    background-color: rgba(0,0,0,0.6);
-    justify-content:flex-end;
-}
-.sohbet-btn, #profileBtn{
-    width:120px;
-    height:45px;
-    padding:0;
-    margin:0;
-    background-color: rgba(255,255,255,0.1);
-    border:none;
-    border-radius:5px;
-    color:white;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:5px;
-    font-size:14px;
-}
-.messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
-.message{
-    display:flex;
-    gap:10px;
-    max-width:70%;
-    padding:10px;
-    border-radius:10px;
-    background-color:#000;
-    color:white;
-    border:1px solid white;
-    position:relative;
-}
-.message.user{flex-direction:row-reverse;align-self:flex-end;}
-.message.peer{flex-direction:row;align-self:flex-start;}
-.message .profile-pic{width:40px;height:40px;border-radius:50%;object-fit:cover;}
-.message .content{display:flex;flex-direction:column;}
-.message .name{font-weight:bold;}
-.message .text{margin-top:3px;}
-.input-container{display:flex;padding:10px;background-color: rgba(255,255,255,0.05);align-items:center;gap:5px;margin-top:auto;}
-#messageInput{
-    flex:1;
-    padding:10px 15px;
-    border-radius:5px;
-    border:none;
-    outline:none;
-    font-size:14px;
-    color:white;
-    background-color: rgba(255,255,255,0.1);
-    resize:none;
-    min-height:45px;
-    max-height: 200px;
-    overflow-y: auto;
-    line-height: 1.5;
-}
-.input-container button{width:45px;height:45px;background-color: rgba(255,255,255,0.1);border:none;border-radius:5px;cursor:pointer;display:flex;justify-content:center;align-items:center;transition: all 0.3s ease;color:white;font-size:18px;}
-.input-container button:hover{background-color: rgba(255,255,255,0.3);transform:scale(1.05);}
-#profilePanel{
-    position:absolute;
-    top:60px;
-    left:50px;
-    width:250px;
-    background-color:rgba(0,0,0,0.95);
-    padding:15px;
-    border-radius:10px;
-    display:none;
-    flex-direction:column;
-    gap:10px;
-    cursor:move;
-    z-index:1000;
-    transition: left 0.3s ease-out, top 0.3s ease-out;
-}
-.active-panel{
-    animation:bounce 0.6s ease-out;
-}
-#profilePanel label{font-size:14px;}
-#profilePanel img{width:60px;height:60px;border-radius:50%;object-fit:cover;cursor:pointer;}
-#profilePanel input[type="text"]{padding:5px;border-radius:5px;border:none;outline:none;}
-#profilePanel button{width:100%;padding:8px;border-radius:5px;border:none;background-color:rgba(255,255,255,0.2);color:white;cursor:pointer;}
-#peerProfile{position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:5px;background-color: rgba(255,255,255,0.05);padding:5px 10px;border-radius:10px; opacity: 1; transition: opacity 1s ease-in-out;}
-#peerProfile img{width:40px;height:40px;border-radius:50%;object-fit:cover;}
-.status-message {
-    text-align: center;
-    padding: 10px;
-    color: white;
-    font-size: 14px;
-    opacity: 0.7;
-}
-</style>
+        .chat-container{
+            position:absolute;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            display:flex;
+            flex-direction:column;
+            background-color:rgba(0,0,0,0.85);
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .profile-panel{
+            display:flex;
+            align-items:center;
+            padding:15px 20px;
+            gap:10px;
+            background-color: rgba(0,0,0,0.6);
+            justify-content:flex-end;
+        }
+        .sohbet-btn, #profileBtn{
+            width:120px;
+            height:45px;
+            padding:0;
+            margin:0;
+            background-color: rgba(255,255,255,0.1);
+            border:none;
+            border-radius:5px;
+            color:white;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:5px;
+            font-size:14px;
+            transition: all 0.3s ease;
+        }
+        .sohbet-btn:hover, #profileBtn:hover {
+            background-color: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        .messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+        .message{
+            display:flex;
+            gap:10px;
+            max-width:70%;
+            padding:10px;
+            border-radius:10px;
+            background-color:#000;
+            color:white;
+            border:1px solid white;
+            position:relative;
+        }
+        .message.user{flex-direction:row-reverse;align-self:flex-end;}
+        .message.peer{flex-direction:row;align-self:flex-start;}
+        .message .profile-pic{width:40px;height:40px;border-radius:50%;object-fit:cover;}
+        .message .content{display:flex;flex-direction:column;}
+        .message .name{font-weight:bold;}
+        .message .text{margin-top:3px; word-wrap: break-word;}
+        .input-container{display:flex;padding:10px;background-color: rgba(255,255,255,0.05);align-items:center;gap:5px;margin-top:auto;}
+        #messageInput{
+            flex:1;
+            padding:10px 15px;
+            border-radius:5px;
+            border:none;
+            outline:none;
+            font-size:14px;
+            color:white;
+            background-color: rgba(255,255,255,0.1);
+            resize:none;
+            min-height:45px;
+            max-height: 200px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+        .input-container button{width:45px;height:45px;background-color: rgba(255,255,255,0.1);border:none;border-radius:5px;cursor:pointer;display:flex;justify-content:center;align-items:center;transition: all 0.3s ease;color:white;font-size:18px;}
+        .input-container button:hover{background-color: rgba(255,255,255,0.3);transform:scale(1.05);}
+        #profilePanel{
+            position:absolute;
+            top:60px;
+            left:50px;
+            width:250px;
+            background-color:rgba(0,0,0,0.95);
+            padding:15px;
+            border-radius:10px;
+            display:none;
+            flex-direction:column;
+            gap:10px;
+            cursor:move;
+            z-index:1000;
+            transition: left 0.3s ease-out, top 0.3s ease-out;
+        }
+        .active-panel{
+            animation:bounce 0.6s ease-out;
+        }
+        #profilePanel label{font-size:14px;}
+        #profilePanel img{width:60px;height:60px;border-radius:50%;object-fit:cover;cursor:pointer;}
+        #profilePanel input[type="text"]{padding:5px;border-radius:5px;border:none;outline:none; color: black;}
+        #profilePanel button{width:100%;padding:8px;border-radius:5px;border:none;background-color:rgba(255,255,255,0.2);color:white;cursor:pointer;}
+        #peerProfile{position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:5px;background-color: rgba(255,255,255,0.05);padding:5px 10px;border-radius:10px; opacity: 1; transition: opacity 1s ease-in-out;}
+        #peerProfile img{width:40px;height:40px;border-radius:50%;object-fit:cover;}
+        .status-message {
+            text-align: center;
+            padding: 10px;
+            color: white;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        .blinking {
+            animation: blinkWhite 1.5s infinite;
+        }
+        .sohbet-btn[disabled],
+        .sohbet-btn[disabled]:hover {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        #inviteLinkDisplay {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            cursor: copy;
+            font-size: 14px;
+            word-wrap: break-word;
+            display: none;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-<div class="splash-screen">
-    <div id="smessager-logo">
-        <span>S</span>
-        <span>M</span>
-        <span>e</span>
-        <span>s</span>
-        <span>s</span>
-        <span>a</span>
-        <span>g</span>
-        <span>e</span>
-        <span>r</span>
+    <div class="splash-screen">
+        <div id="smessager-logo">
+            <span>S</span>
+            <span>M</span>
+            <span>e</span>
+            <span>s</span>
+            <span>s</span>
+            <span>a</span>
+            <span>g</span>
+            <span>e</span>
+            <span>r</span>
+        </div>
     </div>
-</div>
 
-<div class="chat-container">
-    <div class="profile-panel">
-        <button class="sohbet-btn" id="createRoomBtn"><i class="fas fa-link"></i> Sohbet Kur</button>
-        <button id="profileBtn"><i class="fas fa-user-cog"></i></button>
+    <div class="chat-container">
+        <div class="profile-panel">
+            <button class="sohbet-btn" id="createRoomBtn"><i class="fas fa-link"></i> Sohbet Kur</button>
+            <button id="profileBtn"><i class="fas fa-user-cog"></i></button>
+        </div>
+        <div class="status-message" id="statusMessage">Sohbet başlatmak için "Sohbet Kur" butonuna tıkla.</div>
+        <div class="messages" id="messages"></div>
+
+        <div class="input-container">
+            <button class="send-btn" disabled><i class="fas fa-paper-plane"></i></button>
+            <textarea id="messageInput" rows="1" placeholder="Mesaj yaz..." disabled></textarea>
+            <button class="photo-btn" disabled><i class="fas fa-image"></i></button>
+            <button class="audio-btn" disabled><i class="fas fa-microphone"></i></button>
+            <input type="file" id="imageInput" accept="image/*" style="display:none;">
+        </div>
     </div>
-    <div class="status-message" id="statusMessage">Sohbet başlatmak için "Sohbet Kur" butonuna tıkla.</div>
-    <div class="messages" id="messages"></div>
 
-    <div class="input-container">
-        <button class="send-btn"><i class="fas fa-paper-plane"></i></button>
-        <textarea id="messageInput" rows="1" placeholder="Mesaj yaz..."></textarea>
-        <button class="photo-btn"><i class="fas fa-image"></i></button>
-        <button class="audio-btn"><i class="fas fa-microphone"></i></button>
-        <input type="file" id="imageInput" accept="image/*" style="display:none;">
+    <div id="profilePanel">
+        <label>Profil Resmi</label>
+        <img id="profileImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><br>
+        <input type="file" id="profileImgInput" accept="image/*" style="display:none;">
+        <label>Kullanıcı Adı</label>
+        <input type="text" id="profileNameInput" value="Anonim">
+        <button id="saveProfileBtn">Kaydet</button>
     </div>
-</div>
 
-<div id="profilePanel">
-    <label>Profil Resmi</label>
-    <img id="profileImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><br>
-    <input type="file" id="profileImgInput" accept="image/*" style="display:none;">
-    <label>Kullanıcı Adı</label>
-    <input type="text" id="profileNameInput" value="Anonim">
-    <button id="saveProfileBtn">Kaydet</button>
-</div>
+    <div id="peerProfile" style="opacity: 0; display: none;">
+        <img id="peerAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+        <span id="peerName">Arkadaşın Bekleniyor...</span>
+    </div>
 
-<div id="peerProfile">
-    <img id="peerAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-    <span id="peerName">Arkadaşın Bekleniyor...</span>
-</div>
+    <script>
+        window.onload = function() {
 
-<script>
-window.onload = function() {
+            // --- GENEL DEĞİŞKENLER VE DOM ELEMANLARI ---
+            const messagesContainer = document.getElementById('messages');
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.querySelector('.send-btn');
+            const audioBtn = document.querySelector('.audio-btn');
+            const photoBtn = document.querySelector('.photo-btn');
+            const imageInput = document.getElementById('imageInput');
+            const splashScreen = document.querySelector('.splash-screen');
+            const chatContainer = document.querySelector('.chat-container');
+            const smessagerLogo = document.getElementById('smessager-logo');
+            const createRoomBtn = document.getElementById('createRoomBtn');
+            const statusMessage = document.getElementById('statusMessage');
+            const profileBtn = document.getElementById('profileBtn');
+            const profilePanel = document.getElementById('profilePanel');
+            const profileImgInput = document.getElementById('profileImgInput');
+            const profileImg = document.getElementById('profileImg');
+            const profileNameInput = document.getElementById('profileNameInput');
+            const saveProfileBtn = document.getElementById('saveProfileBtn');
+            const peerProfileDisplay = document.getElementById('peerProfile');
+            const peerAvatar = document.getElementById('peerAvatar');
+            const peerName = document.getElementById('peerName');
+            
+            // P2P DEĞİŞKENLERİ
+            let peerConnection;
+            let dataChannel;
+            let isInitiator = false;
+            let isConnected = false;
+            let peerProfile = { name: 'Arkadaşın Bekleniyor...', avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
 
-    // --- GENEL DEĞİŞKENLER VE DOM ELEMANLARI ---
-    const messagesContainer = document.getElementById('messages');
-    const messageInput = document.getElementById('messageInput');
-    const sendBtn = document.querySelector('.send-btn');
-    const audioBtn = document.querySelector('.audio-btn');
-    const photoBtn = document.querySelector('.photo-btn');
-    const imageInput = document.getElementById('imageInput');
-    const splashScreen = document.querySelector('.splash-screen');
-    const chatContainer = document.querySelector('.chat-container');
-    const smessagerLogo = document.getElementById('smessager-logo');
-    const createRoomBtn = document.getElementById('createRoomBtn');
-    const statusMessage = document.getElementById('statusMessage');
-    const profileBtn = document.getElementById('profileBtn');
-    const profilePanel = document.getElementById('profilePanel');
-    const profileImgInput = document.getElementById('profileImgInput');
-    const profileImg = document.getElementById('profileImg');
-    const profileNameInput = document.getElementById('profileNameInput');
-    const saveProfileBtn = document.getElementById('saveProfileBtn');
-    
-    // P2P DEĞİŞKENLERİ
-    let peerConnection;
-    let dataChannel;
-    let isInitiator = false;
-    let isConnected = false;
+            // Durum yönetimi için değişkenler
+            let userProfile = { name: 'Anonim', avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
+            
+            // --- FONKSİYON TANIMLARI ---
 
-    // Durum yönetimi için değişkenler
-    let userProfile = { name: 'Anonim', avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
-    
-    // Sinyalizasyon Sunucusu (URL'de simülasyon)
-    // Gerçek bir uygulamada, bir sunucu bu bilgileri iletmek için kullanılır.
-    const urlParams = new URLSearchParams(window.location.search);
-    const peerSignal = urlParams.get('signal');
-
-    // --- FONKSİYON TANIMLARI ---
-
-    // RTCPeerConnection'ı kurar ve olay dinleyicilerini ayarlar.
-    async function setupPeerConnection() {
-        const configuration = {
-            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-        };
-        peerConnection = new RTCPeerConnection(configuration);
-
-        // ICE adaylarını (candidate) bulduğunda çalışır. Adaylar, diğer eşin bağlanması için gerekli IP ve port bilgilerini içerir.
-        peerConnection.onicecandidate = ({ candidate }) => {
-            if (candidate) {
-                console.log("ICE Adayı bulundu:", candidate);
-                // ICE adayını diğer eşe göndermemiz gerekiyor. URL'ye ekliyoruz.
-                const newUrl = `${window.location.href}&candidate=${btoa(JSON.stringify(candidate))}`;
-                window.history.replaceState(null, null, newUrl);
-                statusMessage.textContent = "Bağlantı bilgileri URL'ye eklendi. Bağlantıyı paylaş!";
-            }
-        };
-
-        // Bağlantı durumu değiştiğinde çalışır.
-        peerConnection.oniceconnectionstatechange = () => {
-            console.log("ICE Bağlantı Durumu:", peerConnection.iceConnectionState);
-            if (peerConnection.iceConnectionState === "connected") {
-                isConnected = true;
-                statusMessage.textContent = "Bağlantı kuruldu!";
-                messageInput.disabled = false;
-                sendBtn.disabled = false;
-            } else if (peerConnection.iceConnectionState === "disconnected") {
-                isConnected = false;
-                statusMessage.textContent = "Bağlantı kesildi. Lütfen sayfayı yenileyin.";
-                messageInput.disabled = true;
-                sendBtn.disabled = true;
-            }
-        };
-
-        // Eğer bu taraf bir "cevap" veren (answerer) ise, bu olay tetiklenir ve dataChannel oluşturulur.
-        peerConnection.ondatachannel = (event) => {
-            dataChannel = event.channel;
-            console.log("Veri Kanalı alındı:", dataChannel);
-            setupDataChannelListeners();
-        };
-
-        // Bağlantı kurulmaya hazır olduğunda tetiklenir.
-        // Teklif (offer) oluşturan tarafta çalışır.
-        peerConnection.onnegotiationneeded = async () => {
-            if (isInitiator) {
-                const offer = await peerConnection.createOffer();
-                await peerConnection.setLocalDescription(offer);
-                console.log("Teklif oluşturuldu:", offer);
-
-                // Teklifi base64 formatında URL'ye ekle
-                const encodedOffer = btoa(JSON.stringify(offer));
-                const newUrl = `${window.location.origin}${window.location.pathname}?signal=${encodedOffer}`;
-                window.history.pushState(null, null, newUrl);
-
-                statusMessage.textContent = "Bağlantı oluşturuldu! Lütfen bu URL'yi arkadaşınızla paylaşın.";
-                createRoomBtn.innerHTML = `<i class="fas fa-copy"></i> Kopyalandı!`;
-                copyToClipboard(newUrl);
-
-                setTimeout(() => {
-                    createRoomBtn.innerHTML = `<i class="fas fa-link"></i> URL'yi Paylaş`;
-                    createRoomBtn.classList.remove('blinking');
-                }, 3000);
-            }
-        };
-    }
-
-    // DataChannel olay dinleyicilerini ayarlar.
-    function setupDataChannelListeners() {
-        dataChannel.onmessage = (event) => {
-            console.log("Mesaj alındı:", event.data);
-            try {
-                const messageData = JSON.parse(event.data);
-                addMessage(messageData, 'peer', messageData.profile);
-                updatePeerProfile(messageData.profile);
-            } catch (e) {
-                console.error("Mesaj parse edilemedi:", e);
-            }
-        };
-        dataChannel.onopen = () => {
-            console.log("Veri Kanalı açıldı!");
-            messageInput.disabled = false;
-            sendBtn.disabled = false;
-            // Diğer eşe profil bilgilerimizi gönder
-            dataChannel.send(JSON.stringify({ profile: userProfile }));
-        };
-        dataChannel.onclose = () => {
-            console.log("Veri Kanalı kapandı.");
-        };
-    }
-
-    // Peer bağlantısını başlatır.
-    async function startP2PConnection() {
-        await setupPeerConnection();
-        // Eğer URL'de bir sinyal varsa, bu bir "cevap" veren (answerer) tarafıdır.
-        if (peerSignal) {
-            try {
-                const decodedSignal = JSON.parse(atob(peerSignal));
-                if (decodedSignal.type === 'offer') {
-                    // Teklifi ayarla ve bir cevap oluştur
-                    await peerConnection.setRemoteDescription(decodedSignal);
-                    const answer = await peerConnection.createAnswer();
-                    await peerConnection.setLocalDescription(answer);
-
-                    const encodedAnswer = btoa(JSON.stringify(answer));
-                    const newUrl = `${window.location.origin}${window.location.pathname}?signal=${encodedAnswer}`;
-                    window.history.replaceState(null, null, newUrl);
-                    
-                    statusMessage.textContent = "Cevap oluşturuldu! Bu URL'yi arkadaşınızla paylaşın.";
-                    createRoomBtn.innerHTML = `<i class="fas fa-copy"></i> Kopyalandı!`;
-                    copyToClipboard(newUrl);
-
+            // Splash ekran animasyonunu başlatır
+            function startSplashAnimation() {
+                const letters = smessagerLogo.querySelectorAll('span');
+                let delay = 0;
+                letters.forEach((letter, index) => {
                     setTimeout(() => {
-                        createRoomBtn.innerHTML = `<i class="fas fa-link"></i> URL'yi Paylaş`;
-                        createRoomBtn.classList.remove('blinking');
-                    }, 3000);
+                        letter.style.opacity = 1;
+                        if (index === letters.length - 1) {
+                            setTimeout(hideSplashScreen, 1000); // Animasyon bitince gizle
+                        }
+                    }, delay);
+                    delay += 100;
+                });
+            }
 
-                } else if (decodedSignal.type === 'answer') {
-                    // Cevabı ayarla
-                    await peerConnection.setRemoteDescription(decodedSignal);
-                    statusMessage.textContent = "Bağlantı kuruluyor...";
+            // Splash ekranı gizler ve ana arayüzü gösterir
+            function hideSplashScreen() {
+                splashScreen.style.opacity = 0;
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    chatContainer.style.opacity = 1;
+                }, 1000);
+            }
+
+            // RTCPeerConnection'ı kurar ve olay dinleyicilerini ayarlar.
+            async function setupPeerConnection(isOfferCreator = false) {
+                const configuration = {
+                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                };
+                peerConnection = new RTCPeerConnection(configuration);
+
+                // ICE adaylarını (candidate) bulduğunda çalışır.
+                peerConnection.onicecandidate = ({ candidate }) => {
+                    if (candidate) {
+                        console.log("ICE Adayı bulundu:", candidate);
+                        // Adayı diğer eşe göndermemiz gerekiyor.
+                        dataChannel.send(JSON.stringify({ 'candidate': candidate }));
+                    }
+                };
+
+                // Bağlantı durumu değiştiğinde çalışır.
+                peerConnection.oniceconnectionstatechange = () => {
+                    console.log("ICE Bağlantı Durumu:", peerConnection.iceConnectionState);
+                    if (peerConnection.iceConnectionState === "connected") {
+                        isConnected = true;
+                        updateStatus("Bağlantı kuruldu!", true);
+                    } else if (peerConnection.iceConnectionState === "disconnected" || peerConnection.iceConnectionState === "failed" || peerConnection.iceConnectionState === "closed") {
+                        isConnected = false;
+                        updateStatus("Bağlantı kesildi. Lütfen sayfayı yenileyin veya yeni bir sohbet başlatın.");
+                        disableChatUI();
+                    }
+                };
+
+                // Eğer bu taraf bir "cevap" veren (answerer) ise, bu olay tetiklenir ve dataChannel oluşturulur.
+                peerConnection.ondatachannel = (event) => {
+                    dataChannel = event.channel;
+                    console.log("Veri Kanalı alındı:", dataChannel);
+                    setupDataChannelListeners();
+                };
+
+                // Bağlantı kurulmaya hazır olduğunda tetiklenir.
+                peerConnection.onnegotiationneeded = async () => {
+                    if (isOfferCreator) {
+                        try {
+                            const offer = await peerConnection.createOffer();
+                            await peerConnection.setLocalDescription(offer);
+                            console.log("Teklif oluşturuldu:", offer);
+
+                            // Teklifi base64 formatında URL'ye ekle
+                            const encodedOffer = btoa(JSON.stringify(offer));
+                            const newUrl = `${window.location.origin}${window.location.pathname}?signal=${encodedOffer}`;
+                            
+                            updateStatus("Sohbet bağlantınız oluşturuldu. Bağlantıyı kopyalayıp arkadaşınızla paylaşın.", true);
+                            showInviteLink(newUrl);
+
+                        } catch (e) {
+                            console.error("Teklif oluşturulurken hata:", e);
+                            updateStatus("Sohbet oluşturulurken hata oluştu. Lütfen tekrar deneyin.");
+                        }
+                    }
+                };
+            }
+
+            // DataChannel olay dinleyicilerini ayarlar.
+            function setupDataChannelListeners() {
+                dataChannel.onmessage = (event) => {
+                    console.log("Mesaj alındı:", event.data);
+                    try {
+                        const messageData = JSON.parse(event.data);
+                        if (messageData.profile) {
+                            peerProfile = messageData.profile;
+                            updatePeerProfile(peerProfile);
+                        } else {
+                            addMessage(messageData, 'peer');
+                        }
+                    } catch (e) {
+                        console.error("Mesaj parse edilemedi:", e);
+                    }
+                };
+                dataChannel.onopen = () => {
+                    console.log("Veri Kanalı açıldı!");
+                    enableChatUI();
+                    // Diğer eşe profil bilgilerimizi gönder
+                    dataChannel.send(JSON.stringify({ profile: userProfile }));
+                };
+                dataChannel.onclose = () => {
+                    console.log("Veri Kanalı kapandı.");
+                    disableChatUI();
+                };
+            }
+
+            // Yeni mesajı DOM'a ekler
+            function addMessage(content, sender) {
+                const msg = document.createElement('div');
+                msg.classList.add('message', sender);
+                
+                const profile = sender === 'user' ? userProfile : peerProfile;
+                const profilePic = document.createElement('img');
+                profilePic.className = 'profile-pic';
+                profilePic.src = profile.avatar;
+                profilePic.alt = profile.name;
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'content';
+
+                const nameEl = document.createElement('div');
+                nameEl.className = 'name';
+                nameEl.textContent = profile.name;
+                
+                const textEl = document.createElement('div');
+                textEl.className = 'text';
+
+                if (content.text) {
+                    textEl.innerHTML = content.text.replace(/\n/g, '<br>');
                 }
-            } catch (e) {
-                console.error("URL sinyali geçersiz:", e);
-                statusMessage.textContent = "Geçersiz sohbet bağlantısı.";
-            }
-        } else {
-            // Sinyal yoksa, teklif (offer) oluşturan taraftır.
-            isInitiator = true;
-            dataChannel = peerConnection.createDataChannel("chat");
-            setupDataChannelListeners();
-        }
 
-        // ICE adaylarını URL'den ekle
-        const candidateSignal = urlParams.get('candidate');
-        if (candidateSignal) {
-            try {
-                const candidate = JSON.parse(atob(candidateSignal));
-                await peerConnection.addIceCandidate(candidate);
-                console.log("ICE Adayı eklendi:", candidate);
-            } catch (e) {
-                console.error("ICE adayı geçersiz:", e);
-            }
-        }
-    }
+                if (content.img) {
+                    const img = document.createElement('img');
+                    img.src = content.img;
+                    img.style.maxWidth = '100%';
+                    img.style.borderRadius = '10px';
+                    textEl.appendChild(img);
+                }
 
-    // Yeni mesajı DOM'a ekler
-    function addMessage(content, sender, profile) {
-        const msg = document.createElement('div');
-        msg.classList.add('message', sender);
-        
-        const profilePic = document.createElement('img');
-        profilePic.className = 'profile-pic';
-        profilePic.src = profile.avatar;
-
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'content';
-
-        const nameEl = document.createElement('div');
-        nameEl.className = 'name';
-        nameEl.textContent = profile.name;
-    
-        const textEl = document.createElement('div');
-        textEl.className = 'text';
-
-        if (content.text) {
-            textEl.innerHTML = content.text.replace(/\n/g, '<br>');
-        }
-    
-        contentDiv.appendChild(nameEl);
-        contentDiv.appendChild(textEl);
-
-        if (content.img) contentDiv.appendChild(content.img);
-
-        msg.appendChild(profilePic);
-        msg.appendChild(contentDiv);
-    
-        messagesContainer.appendChild(msg);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    // Metni panoya kopyalar
-    function copyToClipboard(text) {
-        if (!navigator.clipboard) {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            return;
-        }
-        navigator.clipboard.writeText(text).then(() => {
-            console.log('Async: Panoya kopyalama başarılı!');
-        }).catch(err => {
-            console.error('Async: Kopyalanamadı:', err);
-        });
-    }
-
-    // Peer profilini günceller
-    function updatePeerProfile(profile) {
-        const peerAvatar = document.getElementById('peerAvatar');
-        const peerName = document.getElementById('peerName');
-        peerAvatar.src = profile.avatar;
-        peerName.textContent = profile.name;
-    }
-
-    // --- BAŞLANGIÇ LOGİĞİ VE OLAY DİNLEYİCİLERİ ---
-    
-    startSplashAnimation();
-
-    // Sayfa yüklendiğinde arayüz durumunu ayarlar
-    function initializeUIState() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const signalFromUrl = urlParams.get('signal');
-        if (signalFromUrl) {
-            statusMessage.textContent = "Bağlantı bilgileri alınıyor...";
-            createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbete Katıl`;
-            createRoomBtn.classList.remove('blinking');
-        } else {
-            statusMessage.textContent = 'Sohbet başlatmak için "Sohbet Kur" butonuna tıkla.';
-            createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
-            createRoomBtn.classList.add('blinking');
-        }
-    }
-
-    // Sayfa yüklendiğinde arayüz durumunu ayarla
-    initializeUIState();
-    startP2PConnection();
-
-    // Oda Kur butonu
-    createRoomBtn.addEventListener('click', () => {
-        const signalFromUrl = urlParams.get('signal');
-        if (signalFromUrl) {
-            // Zaten bir sinyal varsa, bu URL'yi kopyala ve sohbeti başlat
-            copyToClipboard(window.location.href);
-            createRoomBtn.innerHTML = `<i class="fas fa-copy"></i> Kopyalandı!`;
-            statusMessage.textContent = 'Sohbet bağlantısı kopyalandı!';
-            setTimeout(() => {
-                createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbete Katıl`;
-            }, 3000);
-        } else {
-            // Yeni bir sohbet başlat
-            isInitiator = true;
-            // Teklif oluşturma süreci onnegotiationneeded olayında başlayacak.
-        }
-    });
-
-    // Mesaj gönderme butonu
-    sendBtn.addEventListener('click', () => {
-        const text = messageInput.value.trim();
-        if (!text || !isConnected) return;
-        
-        const messageData = {
-            text: text,
-            profile: userProfile
-        };
-        
-        try {
-            dataChannel.send(JSON.stringify(messageData));
-            addMessage(messageData, 'user', userProfile);
-            messageInput.value = '';
-            messageInput.style.height = '45px';
-        } catch (e) {
-            console.error("Mesaj gönderilirken hata oluştu:", e);
-            statusMessage.textContent = "Mesaj gönderilemedi. Bağlantı yok.";
-        }
-    });
-
-    // Profil panelini göster/gizle
-    profileBtn.addEventListener('click', () => {
-        profilePanel.style.display = profilePanel.style.display === 'flex' ? 'none' : 'flex';
-        profilePanel.classList.toggle('active-panel');
-    });
-
-    // Profil resmini değiştirme
-    profileImg.addEventListener('click', () => { profileImgInput.click(); });
-    profileImgInput.addEventListener('change', function () {
-        const file = this.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = e => { 
-                profileImg.src = e.target.result; 
-                userProfile.avatar = e.target.result; 
-            }
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Profil bilgilerini kaydet
-    saveProfileBtn.addEventListener('click', () => { 
-        userProfile.name = profileNameInput.value || 'Anonim'; 
-        profilePanel.style.display = 'none'; 
-    });
-
-    // ENTER ile mesaj gönderme, SHIFT+ENTER ile alt satıra geçme
-    messageInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendBtn.click();
-        }
-    });
-
-    // Textarea otomatik büyüme
-    messageInput.addEventListener('input', () => {
-        messageInput.style.height = 'auto';
-        messageInput.style.height = messageInput.scrollHeight + 'px';
-    });
-
-    // Resim gönderme butonu
-    photoBtn.addEventListener('click', () => { imageInput.click(); });
-    imageInput.addEventListener('change', function () {
-        const file = this.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.style.maxWidth = '100%';
-                img.style.borderRadius = '10px';
-                addMessage({ text: 'Resim gönderildi.', img: img }, 'user', userProfile);
-            }
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Ses kaydı ve gönderme
-    let mediaRecorder, audioChunks = [], recording = false;
-    audioBtn.addEventListener('click', async () => {
-        if (recording) { 
-            mediaRecorder.stop(); 
-            recording = false; 
-            audioBtn.style.color = 'white';
-        } else {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.start();
-                recording = true;
-                audioChunks = [];
-                audioBtn.style.color = 'red';
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
-                    const audioURL = URL.createObjectURL(blob);
+                if (content.audio) {
                     const audio = document.createElement('audio');
                     audio.controls = true;
-                    audio.src = audioURL;
-                    addMessage({ text: 'Sesli mesaj gönderildi.', img: audio }, 'user', userProfile);
-                };
-            } catch (e) {
-                console.error("Mikrofona erişim hatası:", e);
-                statusMessage.textContent = 'Mikrofon izni gerekli.';
+                    audio.src = content.audio;
+                    textEl.appendChild(audio);
+                }
+                
+                contentDiv.appendChild(nameEl);
+                contentDiv.appendChild(textEl);
+                msg.appendChild(profilePic);
+                msg.appendChild(contentDiv);
+                
+                messagesContainer.appendChild(msg);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
-        }
-    });
 
-    // Profil paneli sürükleme işlevi
-    let isDragging = false, offsetX = 0, offsetY = 0;
-    profilePanel.addEventListener('mousedown', (e) => { 
-        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'IMG') {
-            isDragging = true; 
-            offsetX = e.clientX - profilePanel.offsetLeft; 
-            offsetY = e.clientY - profilePanel.offsetTop; 
-        }
-    });
+            // Metni panoya kopyalar
+            async function copyToClipboard(text) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    console.log('Async: Panoya kopyalama başarılı!');
+                } catch (err) {
+                    console.error('Async: Kopyalanamadı:', err);
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                }
+            }
 
-    document.addEventListener('mouseup', () => { isDragging = false; });
-    document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            let newLeft = e.clientX - offsetX;
-            let newTop = e.clientY - offsetY;
+            // Durum mesajını günceller
+            function updateStatus(message, isBlinking = false) {
+                statusMessage.textContent = message;
+                if (isBlinking) {
+                    statusMessage.classList.add('blinking');
+                } else {
+                    statusMessage.classList.remove('blinking');
+                }
+            }
+            
+            // Davet linkini gösterir
+            function showInviteLink(url) {
+                createRoomBtn.innerHTML = `<i class="fas fa-copy"></i> Kopyala`;
+                createRoomBtn.classList.remove('blinking');
+                createRoomBtn.onclick = () => {
+                    copyToClipboard(url);
+                    updateStatus("Davet bağlantısı panoya kopyalandı!");
+                };
+            }
 
-            const panelWidth = profilePanel.offsetWidth;
-            const panelHeight = profilePanel.offsetHeight;
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
+            // Sohbet arayüzünü etkinleştirir
+            function enableChatUI() {
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                photoBtn.disabled = false;
+                audioBtn.disabled = false;
+                createRoomBtn.disabled = true;
+                peerProfileDisplay.style.display = 'flex';
+                setTimeout(() => peerProfileDisplay.style.opacity = 1, 10);
+            }
 
-            if (newLeft < 0) newLeft = 0;
-            if (newLeft + panelWidth > windowWidth) newLeft = windowWidth - panelWidth;
-            if (newTop < 0) newTop = 0;
-            if (newTop + panelHeight > windowHeight) newTop = windowHeight - panelHeight;
+            // Sohbet arayüzünü devre dışı bırakır
+            function disableChatUI() {
+                messageInput.disabled = true;
+                sendBtn.disabled = true;
+                photoBtn.disabled = true;
+                audioBtn.disabled = true;
+                createRoomBtn.disabled = false;
+                peerProfileDisplay.style.opacity = 0;
+                setTimeout(() => peerProfileDisplay.style.display = 'none', 1000);
+            }
 
-            profilePanel.style.left = newLeft + 'px';
-            profilePanel.style.top = newTop + 'px';
-        }
-    });
-};
-</script>
+            // Peer profilini günceller
+            function updatePeerProfile(profile) {
+                peerAvatar.src = profile.avatar;
+                peerName.textContent = profile.name;
+            }
+
+            // --- BAŞLANGIÇ LOGİĞİ VE OLAY DİNLEYİCİLERİ ---
+            
+            startSplashAnimation();
+
+            // Sohbeti başlat
+            async function startConnectionFlow() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const signalFromUrl = urlParams.get('signal');
+
+                if (signalFromUrl) {
+                    // Sinyal varsa, bu "cevap" veren (answerer) taraftır.
+                    updateStatus("Sohbet bağlantısı alınıyor...");
+                    await setupPeerConnection();
+                    try {
+                        const decodedSignal = JSON.parse(atob(signalFromUrl));
+                        if (decodedSignal.type === 'offer') {
+                            await peerConnection.setRemoteDescription(decodedSignal);
+                            const answer = await peerConnection.createAnswer();
+                            await peerConnection.setLocalDescription(answer);
+                            const encodedAnswer = btoa(JSON.stringify(answer));
+                            const newUrl = `${window.location.origin}${window.location.pathname}?signal=${encodedAnswer}`;
+                            updateStatus("Sohbet bağlantısı kuruluyor. Lütfen bu URL'yi arkadaşınızla paylaşın.", true);
+                            showInviteLink(newUrl);
+                        } else if (decodedSignal.type === 'answer') {
+                            await peerConnection.setRemoteDescription(decodedSignal);
+                            updateStatus("Bağlantı kuruluyor...");
+                        }
+                    } catch (e) {
+                        console.error("URL sinyali geçersiz:", e);
+                        updateStatus("Geçersiz sohbet bağlantısı. Lütfen doğru bir link ile tekrar deneyin.");
+                    }
+                } else {
+                    // Sinyal yoksa, teklif (offer) oluşturan taraftır.
+                    isInitiator = true;
+                    await setupPeerConnection(true);
+                    dataChannel = peerConnection.createDataChannel("chat");
+                    setupDataChannelListeners();
+                }
+            }
+
+            createRoomBtn.addEventListener('click', () => {
+                if (!isInitiator && !isConnected) {
+                    startConnectionFlow();
+                }
+            });
+
+            // Mesaj gönderme butonu
+            sendBtn.addEventListener('click', () => {
+                const text = messageInput.value.trim();
+                if (!text || !isConnected) return;
+                
+                const messageData = { text: text, profile: userProfile };
+                
+                try {
+                    dataChannel.send(JSON.stringify(messageData));
+                    addMessage(messageData, 'user');
+                    messageInput.value = '';
+                    messageInput.style.height = '45px';
+                } catch (e) {
+                    console.error("Mesaj gönderilirken hata oluştu:", e);
+                    updateStatus("Mesaj gönderilemedi. Bağlantı yok.");
+                }
+            });
+
+            // Profil panelini göster/gizle
+            profileBtn.addEventListener('click', () => {
+                profilePanel.style.display = profilePanel.style.display === 'flex' ? 'none' : 'flex';
+                profilePanel.classList.toggle('active-panel');
+            });
+
+            // Profil resmini değiştirme
+            profileImg.addEventListener('click', () => { profileImgInput.click(); });
+            profileImgInput.addEventListener('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = e => { 
+                        profileImg.src = e.target.result; 
+                        userProfile.avatar = e.target.result; 
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Profil bilgilerini kaydet
+            saveProfileBtn.addEventListener('click', () => { 
+                userProfile.name = profileNameInput.value || 'Anonim'; 
+                profilePanel.style.display = 'none'; 
+            });
+
+            // ENTER ile mesaj gönderme, SHIFT+ENTER ile alt satıra geçme
+            messageInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendBtn.click();
+                }
+            });
+
+            // Textarea otomatik büyüme
+            messageInput.addEventListener('input', () => {
+                messageInput.style.height = 'auto';
+                messageInput.style.height = messageInput.scrollHeight + 'px';
+            });
+
+            // Resim gönderme butonu
+            photoBtn.addEventListener('click', () => { imageInput.click(); });
+            imageInput.addEventListener('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const dataUrl = e.target.result;
+                        const messageData = {
+                            text: 'Resim gönderildi.',
+                            img: dataUrl,
+                            profile: userProfile
+                        };
+                        dataChannel.send(JSON.stringify(messageData));
+                        addMessage(messageData, 'user');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Ses kaydı ve gönderme
+            let mediaRecorder, audioChunks = [], recording = false;
+            audioBtn.addEventListener('click', async () => {
+                if (recording) { 
+                    mediaRecorder.stop(); 
+                    recording = false; 
+                    audioBtn.style.color = 'white';
+                } else {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        mediaRecorder = new MediaRecorder(stream);
+                        mediaRecorder.start();
+                        recording = true;
+                        audioChunks = [];
+                        audioBtn.style.color = 'red';
+                        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                        mediaRecorder.onstop = () => {
+                            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                            const reader = new FileReader();
+                            reader.readAsDataURL(blob);
+                            reader.onloadend = () => {
+                                const base64data = reader.result;
+                                const messageData = {
+                                    text: 'Sesli mesaj gönderildi.',
+                                    audio: base64data,
+                                    profile: userProfile
+                                };
+                                dataChannel.send(JSON.stringify(messageData));
+                                addMessage(messageData, 'user');
+                            };
+                        };
+                    } catch (e) {
+                        console.error("Mikrofona erişim hatası:", e);
+                        updateStatus('Mikrofon izni gerekli.');
+                    }
+                }
+            });
+
+            // Profil paneli sürükleme işlevi
+            let isDragging = false, offsetX = 0, offsetY = 0;
+            profilePanel.addEventListener('mousedown', (e) => { 
+                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'IMG') {
+                    isDragging = true; 
+                    offsetX = e.clientX - profilePanel.offsetLeft; 
+                    offsetY = e.clientY - profilePanel.offsetTop; 
+                }
+            });
+
+            document.addEventListener('mouseup', () => { isDragging = false; });
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    let newLeft = e.clientX - offsetX;
+                    let newTop = e.clientY - offsetY;
+
+                    const panelWidth = profilePanel.offsetWidth;
+                    const panelHeight = profilePanel.offsetHeight;
+                    const windowWidth = window.innerWidth;
+                    const windowHeight = window.innerHeight;
+
+                    if (newLeft < 0) newLeft = 0;
+                    if (newLeft + panelWidth > windowWidth) newLeft = windowWidth - panelWidth;
+                    if (newTop < 0) newTop = 0;
+                    if (newTop + panelHeight > windowHeight) newTop = windowHeight - panelHeight;
+
+                    profilePanel.style.left = newLeft + 'px';
+                    profilePanel.style.top = newTop + 'px';
+                }
+            });
+
+            // Sayfa yüklendiğinde bağlantı akışını başlat
+            startConnectionFlow();
+        };
+    </script>
 </body>
 </html>
-
