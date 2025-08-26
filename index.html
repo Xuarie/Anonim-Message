@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SMessage - Peer-to-Peer Sohbet (Fix & Test Mode)</title>
+  <title>SMessage - Peer-to-Peer Sohbet (WebSocket Sinyalleme + Test Mode)</title>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
   <style>
     /* GENEL STİLLER VE RENKLER */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Open Sans', sans-serif; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: linear-gradient(0deg, #000000, #ffffff, #000000, #ffffff); background-size: 400% 400%; animation: slowGradient 40s ease infinite; color: white; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: linear-gradient(0deg, #000000, #0b1220, #000000, #0b1220); background-size: 400% 400%; animation: slowGradient 40s ease infinite; color: white; }
     @keyframes slowGradient { 0% { background-position: 0% 0 } 25% { background-position: 100% 0 } 50% { background-position: 100% 100% } 75% { background-position: 0 100% } 100% { background-position: 0 0 } }
     @keyframes blinkWhite { 0%,100% { opacity: 1; color: white } 50% { opacity: .2; color: #ffffff66 } }
     @keyframes bounce { 0%,100% { transform: translateY(0) } 25% { transform: translateY(-15px) } 50% { transform: translateY(0) } 75% { transform: translateY(-5px) } }
@@ -18,46 +18,46 @@
     #smessager-logo { display: flex; font-weight: 300; font-size: 3rem; color: white; text-shadow: 0 0 10px rgba(255,255,255,.8), 0 0 20px rgba(255,255,255,.5); }
     #smessager-logo span { display: inline-block; opacity: 1; transition: all 1s ease-in-out; }
 
-    .chat-container { position: absolute; inset: 0; display: flex; flex-direction: column; background-color: rgba(0,0,0,.85); opacity: 0; transition: opacity 1s ease-in-out; }
-    .profile-panel { display: flex; align-items: center; padding: 15px 20px; gap: 10px; background-color: rgba(0,0,0,.6); justify-content: flex-end; }
-    .sohbet-btn, #profileBtn, #joinBtn, #testConnectBtn { width: 140px; height: 45px; background-color: rgba(255,255,255,.1); border: none; border-radius: 5px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; transition: all .3s ease; }
-    .sohbet-btn:hover, #profileBtn:hover, #joinBtn:hover, #testConnectBtn:hover { background-color: rgba(255,255,255,.3); transform: scale(1.05); }
+    .chat-container { position: absolute; inset: 0; display: flex; flex-direction: column; background-color: rgba(0,0,0,.65); opacity: 0; transition: opacity 1s ease-in-out; }
+    .profile-panel { display: flex; align-items: center; padding: 12px 16px; gap: 10px; background-color: rgba(0,0,0,.45); justify-content: flex-end; }
+    .sohbet-btn, #profileBtn, #joinBtn, #testConnectBtn { width: 140px; height: 44px; background-color: rgba(255,255,255,.06); border: none; border-radius: 6px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; transition: all .18s ease; }
+    .sohbet-btn:hover, #profileBtn:hover, #joinBtn:hover, #testConnectBtn:hover { background-color: rgba(255,255,255,.14); transform: translateY(-2px); }
 
-    .messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-    .message { display: flex; gap: 10px; max-width: 70%; padding: 10px; border-radius: 10px; background-color: #000; color: white; border: 1px solid white; position: relative; }
+    .messages { flex: 1; padding: 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    .message { display: flex; gap: 10px; max-width: 70%; padding: 10px; border-radius: 10px; background-color: rgba(255,255,255,.02); color: white; border: 1px solid rgba(255,255,255,.06); position: relative; }
     .message.user { flex-direction: row-reverse; align-self: flex-end; }
     .message.peer { flex-direction: row; align-self: flex-start; }
     .message .profile-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
     .message .content { display: flex; flex-direction: column; }
-    .message .name { font-weight: bold; }
-    .message .text { margin-top: 3px; word-wrap: break-word; }
+    .message .name { font-weight: 700; font-size: 13px; opacity: .9; }
+    .message .text { margin-top: 6px; word-wrap: break-word; font-size: 14px; line-height: 1.4; }
 
-    .input-container { display: flex; padding: 10px; background-color: rgba(255,255,255,.05); align-items: center; gap: 5px; margin-top: auto; }
-    #messageInput { flex: 1; padding: 10px 15px; border-radius: 5px; border: none; outline: none; font-size: 14px; color: white; background-color: rgba(255,255,255,.1); resize: none; min-height: 45px; max-height: 200px; overflow-y: auto; line-height: 1.5; }
-    .input-container button { width: 45px; height: 45px; background-color: rgba(255,255,255,.1); border: none; border-radius: 5px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all .3s ease; color: white; font-size: 18px; }
-    .input-container button:hover { background-color: rgba(255,255,255,.3); transform: scale(1.05); }
+    .input-container { display: flex; padding: 10px; background-color: rgba(255,255,255,.03); align-items: center; gap: 8px; margin-top: auto; }
+    #messageInput { flex: 1; padding: 10px 14px; border-radius: 8px; border: none; outline: none; font-size: 14px; color: white; background-color: rgba(255,255,255,.04); resize: none; min-height: 46px; max-height: 220px; overflow-y: auto; line-height: 1.4; }
+    .input-container button { width: 46px; height: 46px; background-color: rgba(255,255,255,.06); border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all .18s ease; color: white; font-size: 18px; }
+    .input-container button:hover { background-color: rgba(255,255,255,.12); transform: translateY(-2px); }
 
-    #profilePanel { position: absolute; top: 60px; left: 50px; width: 250px; background-color: rgba(0,0,0,.95); padding: 15px; border-radius: 10px; display: none; flex-direction: column; gap: 10px; cursor: move; z-index: 1000; transition: left .3s ease-out, top .3s ease-out; }
-    .active-panel { animation: bounce .6s ease-out; }
-    #profilePanel label { font-size: 14px; }
-    #profilePanel img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; cursor: pointer; }
-    #profilePanel input[type="text"] { padding: 5px; border-radius: 5px; border: none; outline: none; color: black; }
-    #profilePanel button { width: 100%; padding: 8px; border-radius: 5px; border: none; background-color: rgba(255,255,255,.2); color: white; cursor: pointer; }
+    #profilePanel { position: absolute; top: 64px; left: 60px; width: 260px; background-color: rgba(0,0,0,.9); padding: 14px; border-radius: 12px; display: none; flex-direction: column; gap: 12px; cursor: move; z-index: 1000; transition: left .3s ease-out, top .3s ease-out; }
+    .active-panel { animation: bounce .45s ease-out; }
+    #profilePanel label { font-size: 13px; }
+    #profilePanel img { width: 68px; height: 68px; border-radius: 50%; object-fit: cover; cursor: pointer; }
+    #profilePanel input[type="text"] { padding: 7px; border-radius: 8px; border: none; outline: none; color: black; }
+    #profilePanel button { width: 100%; padding: 10px; border-radius: 8px; border: none; background-color: rgba(255,255,255,.08); color: white; cursor: pointer; }
 
-    #peerProfile { position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 5px; background-color: rgba(255,255,255,.05); padding: 5px 10px; border-radius: 10px; opacity: 1; transition: opacity 1s ease-in-out; }
+    #peerProfile { position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 8px; background-color: rgba(255,255,255,.03); padding: 6px 10px; border-radius: 12px; opacity: 1; transition: opacity 1s ease-in-out; }
     #peerProfile img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
 
-    .status-message { text-align: center; padding: 10px; color: white; font-size: 14px; opacity: .7; }
+    .status-message { text-align: center; padding: 8px 12px; color: white; font-size: 13px; opacity: .85; }
     .blinking { animation: blinkWhite 1.5s infinite; }
 
     /* --- SİNYALLEŞME MODALI (KOPYALA-YAPIŞTIR) --- */
     #signalModal { position: fixed; inset: 0; background: rgba(0,0,0,.8); display: none; align-items: center; justify-content: center; z-index: 2000; }
-    .modal-card { width: min(900px, 95vw); background: #111; border: 1px solid #444; border-radius: 12px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,.6); display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .modal-card h3 { grid-column: 1 / -1; text-align: center; margin-bottom: 4px; }
-    .modal-card textarea { width: 100%; min-height: 160px; background: #000; color: #fff; border: 1px solid #555; border-radius: 8px; padding: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; font-size: 12px; }
+    .modal-card { width: min(980px, 95vw); background: #0b0f14; border: 1px solid rgba(255,255,255,.04); border-radius: 12px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,.6); display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-card h3 { grid-column: 1 / -1; text-align: center; margin-bottom: 6px; }
+    .modal-card textarea { width: 100%; min-height: 160px; background: #07090b; color: #fff; border: 1px solid #222; border-radius: 8px; padding: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; font-size: 12px; }
     .modal-actions { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
-    .btn { padding: 10px 14px; border-radius: 8px; border: 1px solid #555; background: #1a1a1a; color: #fff; cursor: pointer; }
-    .btn:hover { background: #222; }
+    .btn { padding: 10px 14px; border-radius: 8px; border: 1px solid #222; background: #0b0f12; color: #fff; cursor: pointer; }
+    .btn:hover { background: #0e1418; }
     .small { font-size: 12px; opacity: .8; }
   </style>
 </head>
@@ -104,7 +104,7 @@
   <!-- KOPYALA-YAPIŞTIR SİNYALLEŞME MODALI -->
   <div id="signalModal">
     <div class="modal-card">
-      <h3>P2P Bağlantı Kur (Kopyala-Yapıştır)</h3>
+      <h3>P2P Bağlantı Kur (Kopyala-Yapıştır veya WebSocket Sinyalleme)</h3>
       <div>
         <div class="small">Yerel SDP (Bunu kopyala ve karşı tarafa gönder)</div>
         <textarea id="localSdp" readonly></textarea>
@@ -123,11 +123,14 @@
           <button class="btn" id="btnCloseModal"><i class="fa-solid fa-xmark"></i> Kapat</button>
         </div>
       </div>
-      <div class="small">Not: ICE parçacığı göndermiyoruz; "icegatheringstate=complete" olana kadar bekleyip adayları SDP içine gömüyoruz. Böylece tek kopyala-yapıştır ile bağlantı kurulabilir.</div>
+      <div class="small">Not: Eğer kendi sinyalleme sunucunuzu kullanmak istersen, aşağıdaki <code>SIGNALING_SERVER_URL</code> değişkenini ayarlayın ve sayfayı yayınlayın. WebSocket sunucusu örneği README içinde verilebilir.</div>
     </div>
   </div>
 
   <script>
+    // --- KULLANICI AYARI: Eğer bir sinyalleme sunucusu kullanacaksan buraya WebSocket adresini yaz. Örn: wss://your-signaling.example
+    const SIGNALING_SERVER_URL = ''; // örn: 'wss://example.com:8080'
+
     window.onload = function () {
       // --- GENEL DEĞİŞKENLER VE DOM ELEMANLARI ---
       const messagesContainer = document.getElementById('messages');
@@ -163,20 +166,23 @@
       const btnCloseModal = document.getElementById('btnCloseModal');
 
       // P2P DEĞİŞKENLERİ
-      let peerConnection;
-      let dataChannel;
+      let peerConnection = null;
+      let dataChannel = null;
       let isConnected = false;
       let isInitiator = false;
 
-      // Test-mode peers
-      let pcLocal = null; // the one used by UI
-      let pcA = null; // loopback peer A
-      let pcB = null; // loopback peer B
+      // Local test peers (same window)
+      let pcA = null;
+      let pcB = null;
+
+      // WebSocket sinyalleme
+      let signalingSocket = null;
+      let roomId = null;
 
       let peerProfile = { name: 'Arkadaşın Bekleniyor...', avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
       let userProfile = { name: 'Anonim', avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
 
-      // --- FONKSİYONLAR ---
+      // --- KÜÇÜK YARDIMCI FONKSİYONLAR ---
       function startSplashAnimation() {
         const letters = smessagerLogo.querySelectorAll('span');
         let delay = 0;
@@ -188,7 +194,7 @@
           delay += 80;
         });
       }
-      function hideSplashScreen() { splashScreen.style.opacity = 0; setTimeout(() => { splashScreen.style.display = 'none'; chatContainer.style.opacity = 1; }, 800); }
+      function hideSplashScreen() { splashScreen.style.opacity = 0; setTimeout(() => { splashScreen.style.display = 'none'; chatContainer.style.opacity = 1; }, 700); }
 
       function updateStatus(message, isBlinking = false) { statusMessage.innerHTML = message; statusMessage.classList.toggle('blinking', !!isBlinking); }
       function enableChatUI() { messageInput.disabled = false; sendBtn.disabled = false; photoBtn.disabled = false; audioBtn.disabled = false; peerProfileDisplay.style.display = 'flex'; setTimeout(() => (peerProfileDisplay.style.opacity = 1), 10); }
@@ -209,10 +215,10 @@
         const nameEl = document.createElement('div'); nameEl.className = 'name'; nameEl.textContent = profile.name;
         const textEl = document.createElement('div'); textEl.className = 'text';
 
-        if (content.text) textEl.innerHTML = content.text.replace(/
+        if (content && content.text) textEl.innerHTML = (content.text + '').replace(/
 /g, '<br>');
-        if (content.img) { const img = document.createElement('img'); img.src = content.img; img.style.maxWidth = '100%'; img.style.borderRadius = '10px'; textEl.appendChild(img); }
-        if (content.audio) { const audio = document.createElement('audio'); audio.controls = true; audio.src = content.audio; textEl.appendChild(audio); }
+        if (content && content.img) { const img = document.createElement('img'); img.src = content.img; img.style.maxWidth = '100%'; img.style.borderRadius = '10px'; textEl.appendChild(img); }
+        if (content && content.audio) { const audio = document.createElement('audio'); audio.controls = true; audio.src = content.audio; textEl.appendChild(audio); }
 
         contentDiv.appendChild(nameEl); contentDiv.appendChild(textEl);
         msg.appendChild(profilePic); msg.appendChild(contentDiv);
@@ -227,10 +233,76 @@
       function openModal() { signalModal.style.display = 'flex'; localSdpEl.value = ''; remoteSdpEl.value = ''; }
       function closeModal() { signalModal.style.display = 'none'; }
 
-      // Normal peer setup used by copy-paste flows
+      // --- WebSocket Sinyalleme (opsiyonel) ---
+      function connectSignaling(wsUrl, room) {
+        if (!wsUrl) return;
+        try {
+          signalingSocket = new WebSocket(wsUrl);
+        } catch (e) { console.error('WS connection failed', e); updateStatus('Sinyalleme sunucusuna bağlanılamadı.'); return; }
+
+        signalingSocket.onopen = () => {
+          console.log('Signaling connected');
+          updateStatus('Sinyalleme sunucusuna bağlı. Odaya katılıyor...');
+          // join room
+          roomId = room || (new Date().getTime() + '' + Math.floor(Math.random()*1000));
+          signalingSocket.send(JSON.stringify({ cmd: 'join', room: roomId }));
+          // show share link
+          const share = `${location.origin}${location.pathname}?room=${roomId}`;
+          updateStatus(`Sinyalleme bağlı. Oda: <code>${roomId}</code> — paylaş: <a href="${share}">${share}</a>`, false);
+        };
+
+        signalingSocket.onerror = (e) => { console.error('WS err', e); updateStatus('Sinyalleme hatası.'); };
+
+        signalingSocket.onmessage = async (evt) => {
+          let data = null; try { data = JSON.parse(evt.data); } catch (e) { return; }
+          // Expected: { from, type: 'offer'|'answer'|'candidate', sdp/candidate }
+          console.log('signal recv', data);
+          if (data.type === 'offer') {
+            // remote offer
+            await handleRemoteOffer(data.sdp);
+          } else if (data.type === 'answer') {
+            await handleRemoteAnswer(data.sdp);
+          } else if (data.type === 'candidate') {
+            if (peerConnection) {
+              try { await peerConnection.addIceCandidate(data.candidate); } catch (e) { console.warn('addIce failed', e); }
+            }
+          } else if (data.cmd === 'joined') {
+            // room info: if you're second participant -> createOffer
+            if (data.clients && data.clients >= 2) {
+              // if there is already someone, the new joiner should wait; we'll decide initiator behavior client-side
+              // if you are the second client, create offer
+              if (!isInitiator && !peerConnection) {
+                // make caller
+                isInitiator = true;
+                createOfferViaSignaling();
+              }
+            }
+          }
+        };
+
+        signalingSocket.onclose = () => { console.log('WS closed'); updateStatus('Sinyalleme bağlantısı kapandı.'); };
+      }
+
+      function sendSignal(packet) {
+        if (!signalingSocket || signalingSocket.readyState !== WebSocket.OPEN) return;
+        signalingSocket.send(JSON.stringify(packet));
+      }
+
+      // --- RTCPeerConnection flows (WebSocket or copy-paste) ---
       async function setupPeer() {
+        if (peerConnection) return;
         const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
         peerConnection = new RTCPeerConnection(configuration);
+
+        // forward local ICE candidates to signaling (or store in SDP via awaitIceComplete)
+        peerConnection.onicecandidate = (e) => {
+          if (e.candidate) {
+            // if using signaling server, send candidate
+            if (signalingSocket && signalingSocket.readyState === WebSocket.OPEN) {
+              sendSignal({ type: 'candidate', candidate: e.candidate, room: roomId });
+            }
+          }
+        };
 
         peerConnection.oniceconnectionstatechange = () => {
           const st = peerConnection.iceConnectionState;
@@ -240,19 +312,14 @@
         };
 
         peerConnection.ondatachannel = (event) => {
-          dataChannel = event.channel; console.log('DataChannel geldi');
-          attachDataChannel();
+          dataChannel = event.channel; console.log('DataChannel alındı'); attachDataChannel();
         };
-
-        // Keep pcLocal reference for debugging
-        pcLocal = peerConnection;
       }
 
       function attachDataChannel() {
         if (!dataChannel) return;
         dataChannel.onopen = () => {
-          console.log('DC open'); enableChatUI();
-          safeSend({ type: 'profile', profile: userProfile });
+          console.log('DataChannel open'); enableChatUI(); safeSend({ type: 'profile', profile: userProfile });
         };
         dataChannel.onclose = () => { console.log('DC close'); disableChatUI(); };
         dataChannel.onmessage = (event) => {
@@ -266,35 +333,69 @@
       function awaitIceComplete(pc) {
         return new Promise((resolve) => {
           if (pc.iceGatheringState === 'complete') return resolve();
-          function check() {
-            if (pc.iceGatheringState === 'complete') { pc.removeEventListener('icegatheringstatechange', check); resolve(); }
-          }
+          function check() { if (pc.iceGatheringState === 'complete') { pc.removeEventListener('icegatheringstatechange', check); resolve(); } }
           pc.addEventListener('icegatheringstatechange', check);
         });
       }
 
-      async function createOfferFlow() {
-        isInitiator = true; await setupPeer();
-        dataChannel = peerConnection.createDataChannel('chat'); attachDataChannel();
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        await awaitIceComplete(peerConnection);
-        localSdpEl.value = JSON.stringify(peerConnection.localDescription);
-        await copyToClipboard(localSdpEl.value);
-        updateStatus('Teklif oluşturuldu. Yerel SDP kopyalandı, karşı tarafa gönder.');
+      async function createOfferViaSignaling() {
+        try {
+          await setupPeer();
+          dataChannel = peerConnection.createDataChannel('chat'); attachDataChannel();
+          const offer = await peerConnection.createOffer();
+          await peerConnection.setLocalDescription(offer);
+          // if signaling server, we send offer directly
+          if (signalingSocket && signalingSocket.readyState === WebSocket.OPEN) {
+            sendSignal({ type: 'offer', sdp: peerConnection.localDescription, room: roomId });
+            updateStatus('Teklif gönderildi (sinyalleme). Karşı tarafın yanıtını bekleyin.');
+          } else {
+            // copy-paste fallback
+            await awaitIceComplete(peerConnection);
+            localSdpEl.value = JSON.stringify(peerConnection.localDescription);
+            await copyToClipboard(localSdpEl.value);
+            updateStatus('Teklif oluşturuldu (kopyala-yapıştır). Yerel SDP kopyalandı.');
+            openModal();
+          }
+        } catch (e) { console.error(e); updateStatus('Teklif oluşturulamadı: ' + e.message); }
       }
 
-      async function applyRemoteAnswer() {
+      async function handleRemoteOffer(remoteSdp) {
+        try {
+          await setupPeer();
+          // set remote
+          await peerConnection.setRemoteDescription(remoteSdp);
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+          if (signalingSocket && signalingSocket.readyState === WebSocket.OPEN) {
+            sendSignal({ type: 'answer', sdp: peerConnection.localDescription, room: roomId });
+            updateStatus('Yanıt gönderildi (sinyalleme).');
+          } else {
+            await awaitIceComplete(peerConnection);
+            localSdpEl.value = JSON.stringify(peerConnection.localDescription);
+            await copyToClipboard(localSdpEl.value);
+            updateStatus('Yanıt oluşturuldu (kopyala-yapıştır). Yerel SDP kopyalandı.');
+            openModal();
+          }
+        } catch (e) { console.error('offer handling failed', e); }
+      }
+
+      async function handleRemoteAnswer(remoteSdp) {
+        try {
+          await peerConnection.setRemoteDescription(remoteSdp);
+          updateStatus('Uzak yanıt uygulandı. Bağlantı kuruluyor...');
+        } catch (e) { console.error('answer handling failed', e); }
+      }
+
+      async function applyRemoteAnswerFromModal() {
         try {
           const remote = JSON.parse(remoteSdpEl.value.trim());
           if (remote.type !== 'answer') throw new Error('Yanıt (answer) bekleniyor.');
-          await peerConnection.setRemoteDescription(remote);
-          updateStatus('Uzak yanıt uygulandı. Bağlantı kuruluyor...');
+          await handleRemoteAnswer(remote);
           closeModal();
         } catch (e) { alert('Geçersiz ANSWER: ' + e.message); }
       }
 
-      async function createAnswerFlow() {
+      async function createAnswerFromModal() {
         try {
           await setupPeer();
           const remote = JSON.parse(remoteSdpEl.value.trim());
@@ -305,7 +406,7 @@
           await awaitIceComplete(peerConnection);
           localSdpEl.value = JSON.stringify(peerConnection.localDescription);
           await copyToClipboard(localSdpEl.value);
-          updateStatus('Yanıt oluşturuldu. Yerel SDP (answer) kopyalandı, geri gönder.');
+          updateStatus('Yanıt oluşturuldu. Yerel SDP kopyalandı, geri gönder.');
         } catch (e) { alert('Geçersiz OFFER: ' + e.message); }
       }
 
@@ -317,50 +418,36 @@
 
       // --- TEST MODE: local loopback iki peer (aynı pencerede kendi kendine bağlanma) ---
       async function startLocalLoopback() {
-        // temizle
         stopLocalLoopback();
         updateStatus('Test modu: yerel döngü kuruluyor...');
         const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
         pcA = new RTCPeerConnection(config);
         pcB = new RTCPeerConnection(config);
 
-        // candidate exchange
         pcA.onicecandidate = (e) => { if (e.candidate) pcB.addIceCandidate(e.candidate).catch(console.warn); };
         pcB.onicecandidate = (e) => { if (e.candidate) pcA.addIceCandidate(e.candidate).catch(console.warn); };
 
-        // pcB datachannel handler
         pcB.ondatachannel = (ev) => {
           const dcB = ev.channel;
           dcB.onopen = () => { console.log('dcB open'); };
           dcB.onmessage = (ev2) => {
-            console.log('pcB received', ev2.data);
-            // Simulate a peer reply for testing: echo back
             try {
               const p = JSON.parse(ev2.data);
               if (p.type === 'profile') {
-                // set pcB profile and send one sample message
                 const peerP = { name: 'TestPeer', avatar: 'https://cdn-icons-png.flaticon.com/512/1250/1250687.png' };
                 dcB.send(JSON.stringify({ type: 'profile', profile: peerP }));
                 dcB.send(JSON.stringify({ text: 'Test modunda hoşgeldin.', profile: peerP }));
               } else {
-                // echo other messages
                 dcB.send(JSON.stringify({ text: 'Echo: ' + (p.text || ''), profile: { name: 'TestPeer', avatar: 'https://cdn-icons-png.flaticon.com/512/1250/1250687.png' } }));
               }
             } catch (e) { console.warn(e); }
           };
         };
 
-        // create local data channel on A
         const dcA = pcA.createDataChannel('chat');
-        dcA.onopen = () => {
-          console.log('dcA open');
-          // set global references so UI uses this channel
-          dataChannel = dcA; pcLocal = pcA;
-          attachDataChannel();
-        };
+        dcA.onopen = () => { dataChannel = dcA; attachDataChannel(); };
         dcA.onmessage = (e) => { console.log('dcA msg', e.data); };
 
-        // create offer/answer between pcA and pcB
         const offer = await pcA.createOffer();
         await pcA.setLocalDescription(offer);
         await pcB.setRemoteDescription(pcA.localDescription);
@@ -368,36 +455,55 @@
         await pcB.setLocalDescription(answer);
         await pcA.setRemoteDescription(pcB.localDescription);
 
-        // wait until both are connected (best-effort)
-        pcA.onconnectionstatechange = () => { console.log('pcA connstate', pcA.connectionState); if (pcA.connectionState === 'connected' || pcA.connectionState === 'completed') { updateStatus('Test bağlantısı kuruldu. Tüm butonlar aktif.'); enableChatUI(); } };
-        pcB.onconnectionstatechange = () => { console.log('pcB connstate', pcB.connectionState); };
+        pcA.onconnectionstatechange = () => { if (pcA.connectionState === 'connected' || pcA.connectionState === 'completed') { updateStatus('Test bağlantısı kuruldu. Tüm butonlar aktif.'); enableChatUI(); } };
       }
 
       function stopLocalLoopback() {
         try { if (pcA) { pcA.close(); pcA = null; } if (pcB) { pcB.close(); pcB = null; } } catch (e) { console.warn(e); }
       }
 
-      // --- BAŞLANGIÇ ---
+      // --- EVENT LİSTENERS ---
       startSplashAnimation();
 
-      // Butonlar / Modal
-      createRoomBtn.addEventListener('click', () => { openModal(); });
-      joinBtn.addEventListener('click', () => { openModal(); });
+      createRoomBtn.addEventListener('click', async () => {
+        if (SIGNALING_SERVER_URL) {
+          // connect WS if not connected
+          if (!signalingSocket || signalingSocket.readyState !== WebSocket.OPEN) {
+            const room = (new Date().getTime() + '' + Math.floor(Math.random()*1000));
+            connectSignaling(SIGNALING_SERVER_URL, room);
+            // set initiator once joined message arrives
+          }
+        } else {
+          // fallback to copy-paste modal offer creation
+          openModal();
+        }
+      });
+
+      joinBtn.addEventListener('click', () => { if (SIGNALING_SERVER_URL) {
+          const params = new URLSearchParams(location.search);
+          const room = params.get('room');
+          connectSignaling(SIGNALING_SERVER_URL, room);
+        } else {
+          openModal();
+        }
+      });
+
       testConnectBtn.addEventListener('click', () => { startLocalLoopback(); });
-      btnCreateOffer.addEventListener('click', createOfferFlow);
-      btnApplyAnswer.addEventListener('click', applyRemoteAnswer);
-      btnCreateAnswer.addEventListener('click', createAnswerFlow);
+
+      btnCreateOffer.addEventListener('click', createOfferViaSignaling);
+      btnApplyAnswer.addEventListener('click', applyRemoteAnswerFromModal);
+      btnCreateAnswer.addEventListener('click', createAnswerFromModal);
       btnCloseModal.addEventListener('click', closeModal);
 
       // Mesaj gönderme
       sendBtn.addEventListener('click', () => {
-        const text = messageInput.value.trim();
-        if (!text) return;
-        const payload = { text, profile: userProfile };
+        const text = messageInput.value;
+        if (!text || !text.trim()) return;
+        const payload = { text: text.trim(), profile: userProfile };
         safeSend(payload);
         addMessage(payload, 'user');
         messageInput.value = '';
-        messageInput.style.height = '45px';
+        messageInput.style.height = '46px';
       });
 
       // Enter = gönder, Shift+Enter = yeni satır
@@ -424,7 +530,7 @@
       let mediaRecorder, audioChunks = [], recording = false;
       audioBtn.addEventListener('click', async () => {
         if (recording) {
-          mediaRecorder.stop(); recording = false; audioBtn.style.color = 'white';
+          mediaRecorder.stop(); recording = false; audioBtn.style.color = '';
         } else {
           try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -440,9 +546,7 @@
                 safeSend(payload); addMessage(payload, 'user');
               };
             };
-          } catch (e) {
-            console.error('Mikrofon izni hatası:', e); updateStatus('Mikrofon izni gerekli.');
-          }
+          } catch (e) { console.error('Mikrofon izni hatası:', e); updateStatus('Mikrofon izni gerekli.'); }
         }
       });
 
@@ -467,6 +571,15 @@
           profilePanel.style.left = newLeft + 'px'; profilePanel.style.top = newTop + 'px';
         }
       });
+
+      // Eğer sayfa URL'sinde room paramı varsa ve SIGNALING_SERVER_URL ayarlıysa otomatik bağlan
+      (function tryAutoConnect() {
+        const params = new URLSearchParams(location.search);
+        const r = params.get('room');
+        if (r && SIGNALING_SERVER_URL) {
+          connectSignaling(SIGNALING_SERVER_URL, r);
+        }
+      })();
     };
   </script>
 </body>
