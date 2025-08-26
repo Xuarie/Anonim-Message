@@ -293,12 +293,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     userId = user.uid;
                     authReady = true;
                     console.log('User signed in with UID:', userId);
-                    // Bağlantı kurulduğunda butonu aktifleştir ve yanıp sönme efektini ekle
-                    createRoomBtn.disabled = false;
-                    createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
-                    createRoomBtn.classList.add('blinking');
-                    // Sayfa yenilendiğinde sohbeti sıfırlamak için URL'den oda kimliği alınmaz.
-                    // Yeni bir sohbet oluşturmak için "Sohbet Kur" butonuna tıklanmalıdır.
+                    // Kullanıcı oturum açtıktan sonra URL'yi kontrol et
+                    checkUrlForRoomId();
                 } else {
                     console.log('No user signed in. Attempting anonymous sign-in.');
                     if (typeof __initial_auth_token !== 'undefined') {
@@ -313,6 +309,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } else {
         console.error("Firebase yapılandırması bulunamadı. Lütfen __firebase_config global değişkenini kontrol edin.");
+    }
+
+    // URL'deki oda kimliğini kontrol eden yeni işlev
+    function checkUrlForRoomId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomFromUrl = urlParams.get('room');
+        if (roomFromUrl) {
+            console.log(`URL'de oda kimliği bulundu: ${roomFromUrl}`);
+            roomId = roomFromUrl;
+            joinRoom(roomId);
+            createRoomBtn.disabled = true;
+            createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Odaya Katıldın`;
+            createRoomBtn.classList.remove('blinking');
+        } else {
+            console.log("URL'de oda kimliği bulunamadı, yeni bir sohbet başlat.");
+            createRoomBtn.disabled = false;
+            createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
+            createRoomBtn.classList.add('blinking');
+        }
     }
     
     // Sohbet odası oluşturma ve katılma
