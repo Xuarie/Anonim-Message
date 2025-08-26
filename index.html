@@ -297,18 +297,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                     checkUrlForRoomId();
                 } else {
                     console.log('No user signed in. Attempting anonymous sign-in.');
-                    if (typeof __initial_auth_token !== 'undefined') {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined') {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch(e) {
+                        console.error("Firebase oturum açma hatası:", e);
+                        statusMessage.textContent = 'Bağlantı Hatası: Tekrar dene.';
+                        createRoomBtn.disabled = false;
+                        createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
+                        createRoomBtn.classList.add('blinking');
                     }
                 }
             });
         } catch (error) {
             console.error("Firebase başlatılırken hata oluştu:", error);
+            statusMessage.textContent = 'Firebase başlatılamadı. Kodda bir hata var.';
+            createRoomBtn.disabled = false;
+            createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
+            createRoomBtn.classList.add('blinking');
         }
     } else {
         console.error("Firebase yapılandırması bulunamadı. Lütfen __firebase_config global değişkenini kontrol edin.");
+        statusMessage.textContent = 'Yapılandırma Hatası: Firebase ayarları eksik.';
+        createRoomBtn.disabled = false;
+        createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
+        createRoomBtn.classList.add('blinking');
     }
 
     // URL'deki oda kimliğini kontrol eden yeni işlev
