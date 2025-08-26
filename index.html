@@ -247,12 +247,6 @@ html,body{
     <span id="peerName">Arkadaşın Bekleniyor...</span>
 </div>
 
-<!-- 
-    ============================================================================
-    TÜM FIREBASE KODLARI BURADAN KALDIRILDI.
-    BURAYA KENDİ SİNYALİZASYON MANTIĞINIZI EKLEYEBİLİRSİNİZ.
-    ============================================================================
--->
 <script>
 window.onload = function() {
 
@@ -274,70 +268,166 @@ window.onload = function() {
     const profileImg = document.getElementById('profileImg');
     const profileNameInput = document.getElementById('profileNameInput');
     const saveProfileBtn = document.getElementById('saveProfileBtn');
+    
+    // P2P DEĞİŞKENLERİ
+    let peerConnection;
+    let dataChannel;
+    let isInitiator = false;
+    let isConnected = false;
 
     // Durum yönetimi için değişkenler
     let userProfile = { name: 'Anonim', avatar: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' };
-    let roomId = null;
     
+    // Sinyalizasyon Sunucusu (URL'de simülasyon)
+    // Gerçek bir uygulamada, bir sunucu bu bilgileri iletmek için kullanılır.
+    const urlParams = new URLSearchParams(window.location.search);
+    const peerSignal = urlParams.get('signal');
+
     // --- FONKSİYON TANIMLARI ---
 
-    // Sohbet odası oluşturma
-    function joinRoom(id) {
-        statusMessage.textContent = `Oda: ${id} - Bağlanıyor...`;
-        messagesContainer.innerHTML = '';
-        console.log("Odaya Katılıyor:", id);
+    // RTCPeerConnection'ı kurar ve olay dinleyicilerini ayarlar.
+    async function setupPeerConnection() {
+        const configuration = {
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        };
+        peerConnection = new RTCPeerConnection(configuration);
 
-        // BURAYA SİNYALİZASYON KODLARI GELMELİ
-        // Örnek:
-        // socket.connect(id);
-        // socket.on('message', (data) => addMessage(data, 'peer', { name: data.name, avatar: data.avatar }));
+        // ICE adaylarını (candidate) bulduğunda çalışır. Adaylar, diğer eşin bağlanması için gerekli IP ve port bilgilerini içerir.
+        peerConnection.onicecandidate = ({ candidate }) => {
+            if (candidate) {
+                console.log("ICE Adayı bulundu:", candidate);
+                // ICE adayını diğer eşe göndermemiz gerekiyor. URL'ye ekliyoruz.
+                const newUrl = `${window.location.href}&candidate=${btoa(JSON.stringify(candidate))}`;
+                window.history.replaceState(null, null, newUrl);
+                statusMessage.textContent = "Bağlantı bilgileri URL'ye eklendi. Bağlantıyı paylaş!";
+            }
+        };
+
+        // Bağlantı durumu değiştiğinde çalışır.
+        peerConnection.oniceconnectionstatechange = () => {
+            console.log("ICE Bağlantı Durumu:", peerConnection.iceConnectionState);
+            if (peerConnection.iceConnectionState === "connected") {
+                isConnected = true;
+                statusMessage.textContent = "Bağlantı kuruldu!";
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+            } else if (peerConnection.iceConnectionState === "disconnected") {
+                isConnected = false;
+                statusMessage.textContent = "Bağlantı kesildi. Lütfen sayfayı yenileyin.";
+                messageInput.disabled = true;
+                sendBtn.disabled = true;
+            }
+        };
+
+        // Eğer bu taraf bir "cevap" veren (answerer) ise, bu olay tetiklenir ve dataChannel oluşturulur.
+        peerConnection.ondatachannel = (event) => {
+            dataChannel = event.channel;
+            console.log("Veri Kanalı alındı:", dataChannel);
+            setupDataChannelListeners();
+        };
+
+        // Bağlantı kurulmaya hazır olduğunda tetiklenir.
+        // Teklif (offer) oluşturan tarafta çalışır.
+        peerConnection.onnegotiationneeded = async () => {
+            if (isInitiator) {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                console.log("Teklif oluşturuldu:", offer);
+
+                // Teklifi base64 formatında URL'ye ekle
+                const encodedOffer = btoa(JSON.stringify(offer));
+                const newUrl = `${window.location.origin}${window.location.pathname}?signal=${encodedOffer}`;
+                window.history.pushState(null, null, newUrl);
+
+                statusMessage.textContent = "Bağlantı oluşturuldu! Lütfen bu URL'yi arkadaşınızla paylaşın.";
+                createRoomBtn.innerHTML = `<i class="fas fa-copy"></i> Kopyalandı!`;
+                copyToClipboard(newUrl);
+
+                setTimeout(() => {
+                    createRoomBtn.innerHTML = `<i class="fas fa-link"></i> URL'yi Paylaş`;
+                    createRoomBtn.classList.remove('blinking');
+                }, 3000);
+            }
+        };
     }
 
-    // Sohbeti ve durumu sıfırlar
-    function resetChat() {
-        roomId = null;
-        messagesContainer.innerHTML = '';
-        createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
-        createRoomBtn.classList.add('blinking');
-        statusMessage.textContent = 'Sohbet başlatmak için "Sohbet Kur" butonuna tıkla.';
-        window.history.pushState({}, '', window.location.pathname);
+    // DataChannel olay dinleyicilerini ayarlar.
+    function setupDataChannelListeners() {
+        dataChannel.onmessage = (event) => {
+            console.log("Mesaj alındı:", event.data);
+            try {
+                const messageData = JSON.parse(event.data);
+                addMessage(messageData, 'peer', messageData.profile);
+                updatePeerProfile(messageData.profile);
+            } catch (e) {
+                console.error("Mesaj parse edilemedi:", e);
+            }
+        };
+        dataChannel.onopen = () => {
+            console.log("Veri Kanalı açıldı!");
+            messageInput.disabled = false;
+            sendBtn.disabled = false;
+            // Diğer eşe profil bilgilerimizi gönder
+            dataChannel.send(JSON.stringify({ profile: userProfile }));
+        };
+        dataChannel.onclose = () => {
+            console.log("Veri Kanalı kapandı.");
+        };
     }
 
-    // Rastgele bir oda kimliği oluşturur
-    function generateRoomId() {
-        return Math.random().toString(36).substring(2, 8).toUpperCase();
-    }
-    
-    // Açılış ekranı animasyonunu başlatır
-    function startSplashAnimation() {
-        const letters = smessagerLogo.querySelectorAll('span');
-        const dot = document.createElement('div');
-        dot.className = 'dot-animation';
-        smessagerLogo.appendChild(dot);
+    // Peer bağlantısını başlatır.
+    async function startP2PConnection() {
+        await setupPeerConnection();
+        // Eğer URL'de bir sinyal varsa, bu bir "cevap" veren (answerer) tarafıdır.
+        if (peerSignal) {
+            try {
+                const decodedSignal = JSON.parse(atob(peerSignal));
+                if (decodedSignal.type === 'offer') {
+                    // Teklifi ayarla ve bir cevap oluştur
+                    await peerConnection.setRemoteDescription(decodedSignal);
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
 
-        letters.forEach((letter) => {
-            const logoRect = smessagerLogo.getBoundingClientRect();
-            const letterRect = letter.getBoundingClientRect();
-            const centerX = logoRect.width / 2 - (letterRect.left - logoRect.left + letterRect.width / 2);
-            const centerY = logoRect.height / 2 - (letterRect.top - logoRect.top + letterRect.height / 2);
-            letter.style.transform = `translate(${centerX}px, ${centerY}px) scale(0.1)`;
-            letter.style.opacity = '0';
-        });
+                    const encodedAnswer = btoa(JSON.stringify(answer));
+                    const newUrl = `${window.location.origin}${window.location.pathname}?signal=${encodedAnswer}`;
+                    window.history.replaceState(null, null, newUrl);
+                    
+                    statusMessage.textContent = "Cevap oluşturuldu! Bu URL'yi arkadaşınızla paylaşın.";
+                    createRoomBtn.innerHTML = `<i class="fas fa-copy"></i> Kopyalandı!`;
+                    copyToClipboard(newUrl);
 
-        setTimeout(() => {
-            dot.style.left = '50%';
-            dot.style.top = '50%';
-            dot.style.transform = 'translate(-50%, -50%)';
-            dot.classList.add('show');
-        }, 1000);
+                    setTimeout(() => {
+                        createRoomBtn.innerHTML = `<i class="fas fa-link"></i> URL'yi Paylaş`;
+                        createRoomBtn.classList.remove('blinking');
+                    }, 3000);
 
-        setTimeout(() => {
-            splashScreen.style.opacity = '0';
-            splashScreen.addEventListener('transitionend', () => {
-                splashScreen.style.display = 'none';
-            }, { once: true });
-            chatContainer.style.opacity = '1';
-        }, 3000);
+                } else if (decodedSignal.type === 'answer') {
+                    // Cevabı ayarla
+                    await peerConnection.setRemoteDescription(decodedSignal);
+                    statusMessage.textContent = "Bağlantı kuruluyor...";
+                }
+            } catch (e) {
+                console.error("URL sinyali geçersiz:", e);
+                statusMessage.textContent = "Geçersiz sohbet bağlantısı.";
+            }
+        } else {
+            // Sinyal yoksa, teklif (offer) oluşturan taraftır.
+            isInitiator = true;
+            dataChannel = peerConnection.createDataChannel("chat");
+            setupDataChannelListeners();
+        }
+
+        // ICE adaylarını URL'den ekle
+        const candidateSignal = urlParams.get('candidate');
+        if (candidateSignal) {
+            try {
+                const candidate = JSON.parse(atob(candidateSignal));
+                await peerConnection.addIceCandidate(candidate);
+                console.log("ICE Adayı eklendi:", candidate);
+            } catch (e) {
+                console.error("ICE adayı geçersiz:", e);
+            }
+        }
     }
 
     // Yeni mesajı DOM'a ekler
@@ -393,57 +483,74 @@ window.onload = function() {
         });
     }
 
+    // Peer profilini günceller
+    function updatePeerProfile(profile) {
+        const peerAvatar = document.getElementById('peerAvatar');
+        const peerName = document.getElementById('peerName');
+        peerAvatar.src = profile.avatar;
+        peerName.textContent = profile.name;
+    }
+
     // --- BAŞLANGIÇ LOGİĞİ VE OLAY DİNLEYİCİLERİ ---
     
     startSplashAnimation();
 
-    // URL'deki oda kimliğini kontrol et
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomFromUrl = urlParams.get('room');
-    if (roomFromUrl) {
-        console.log(`URL'de oda ID'si bulundu: ${roomFromUrl}`);
-        roomId = roomFromUrl;
-        joinRoom(roomId);
-        createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Odaya Katıldın`;
-        createRoomBtn.classList.remove('blinking');
-    } else {
-        console.log("URL'de oda ID'si bulunamadı, yeni bir sohbet başlatılıyor.");
-        createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
-        createRoomBtn.classList.add('blinking');
+    // Sayfa yüklendiğinde arayüz durumunu ayarlar
+    function initializeUIState() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const signalFromUrl = urlParams.get('signal');
+        if (signalFromUrl) {
+            statusMessage.textContent = "Bağlantı bilgileri alınıyor...";
+            createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbete Katıl`;
+            createRoomBtn.classList.remove('blinking');
+        } else {
+            statusMessage.textContent = 'Sohbet başlatmak için "Sohbet Kur" butonuna tıkla.';
+            createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
+            createRoomBtn.classList.add('blinking');
+        }
     }
+
+    // Sayfa yüklendiğinde arayüz durumunu ayarla
+    initializeUIState();
+    startP2PConnection();
 
     // Oda Kur butonu
     createRoomBtn.addEventListener('click', () => {
-        resetChat();
-        const newRoomId = generateRoomId();
-        const url = `${window.location.origin}${window.location.pathname}?room=${newRoomId}`;
-        window.history.pushState({}, '', url);
-        roomId = newRoomId;
-        joinRoom(roomId);
-        createRoomBtn.innerHTML = `<i class="fas fa-copy"></i> Kopyalandı!`;
-        createRoomBtn.classList.remove('blinking');
-        statusMessage.textContent = 'Sohbet bağlantısı kopyalandı!';
-        copyToClipboard(url);
-        setTimeout(() => {
-            statusMessage.textContent = `Sohbet Odası: ${roomId}`;
-            createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbet Kur`;
-            createRoomBtn.classList.add('blinking');
-        }, 3000);
+        const signalFromUrl = urlParams.get('signal');
+        if (signalFromUrl) {
+            // Zaten bir sinyal varsa, bu URL'yi kopyala ve sohbeti başlat
+            copyToClipboard(window.location.href);
+            createRoomBtn.innerHTML = `<i class="fas fa-copy"></i> Kopyalandı!`;
+            statusMessage.textContent = 'Sohbet bağlantısı kopyalandı!';
+            setTimeout(() => {
+                createRoomBtn.innerHTML = `<i class="fas fa-link"></i> Sohbete Katıl`;
+            }, 3000);
+        } else {
+            // Yeni bir sohbet başlat
+            isInitiator = true;
+            // Teklif oluşturma süreci onnegotiationneeded olayında başlayacak.
+        }
     });
 
     // Mesaj gönderme butonu
     sendBtn.addEventListener('click', () => {
         const text = messageInput.value.trim();
-        if (!text || !roomId) return;
+        if (!text || !isConnected) return;
         
-        // Bu noktada mesaj göndermek için sinyalizasyon kodunuzu kullanın.
-        // Örnek:
-        // socket.emit('message', { text: text, profile: userProfile });
+        const messageData = {
+            text: text,
+            profile: userProfile
+        };
         
-        // Sadece arayüzde göstermek için:
-        addMessage({ text: text }, 'user', userProfile);
-        messageInput.value = '';
-        messageInput.style.height = '45px';
+        try {
+            dataChannel.send(JSON.stringify(messageData));
+            addMessage(messageData, 'user', userProfile);
+            messageInput.value = '';
+            messageInput.style.height = '45px';
+        } catch (e) {
+            console.error("Mesaj gönderilirken hata oluştu:", e);
+            statusMessage.textContent = "Mesaj gönderilemedi. Bağlantı yok.";
+        }
     });
 
     // Profil panelini göster/gizle
