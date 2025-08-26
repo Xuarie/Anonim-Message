@@ -572,17 +572,10 @@ window.onload = function() {
     // Firebase yapılandırmasını kontrol et
     let firebaseConfig;
     try {
-        firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        firebaseConfig = JSON.parse(document.getElementById('firebase-config').textContent);
+        startFirebase(firebaseConfig);
     } catch (e) {
         console.error("Firebase config is not valid JSON.", e);
-        firebaseConfig = {};
-    }
-
-    // Eğer yapılandırma varsa uygulamayı başlat, yoksa panel'i göster
-    if (Object.keys(firebaseConfig).length > 0) {
-        startFirebase(firebaseConfig);
-    } else {
-        console.error("Firebase config not found. Showing config panel.");
         statusMessage.textContent = 'Configuration Error: Please enter your settings.';
         configPanel.style.display = 'flex';
     }
@@ -773,4 +766,4 @@ window.onload = function() {
 };
 </script>
 </body>
-</html>
+</ht
